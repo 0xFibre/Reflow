@@ -1,11 +1,4 @@
 <template>
-  <v-app-bar flat>
-    <v-app-bar-title>
-      <v-icon icon="mdi-circle-slice-6" />
-      Slide Cash
-    </v-app-bar-title>
-  </v-app-bar>
-
   <v-navigation-drawer v-model="drawer">
     <v-list nav>
       <template v-for="item in items">
@@ -18,12 +11,45 @@
       </template>
     </v-list>
   </v-navigation-drawer>
+  <v-app-bar flat>
+    <v-app-bar-nav-icon
+      class="d-block d-md-none"
+      variant="text"
+      @click.stop="drawer = !drawer"
+    />
+
+    <v-app-bar-title> Slide Cash </v-app-bar-title>
+
+    <v-spacer />
+
+    <v-btn
+      id="menu-activator"
+      rounded
+      flat
+      variant="tonal"
+      prepend-icon="mdi-account-circle-outline"
+    >
+      {{ connection.address ? utils.truncateAddress(connection.address) : "" }}
+    </v-btn>
+
+    <v-menu activator="#menu-activator">
+      <v-list>
+        <v-list-item v-for="(item, index) in items" :key="index" :value="index">
+          <v-list-item-title>{{ item.title }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
+  </v-app-bar>
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { useConnectionStore } from "@/store";
+import { utils } from "@/utils";
+import { ref, Ref } from "vue";
 
-let drawer = ref(null);
+const connection = useConnectionStore();
+
+let drawer: Ref<boolean | null> = ref(null);
 const items = [
   {
     icon: "mdi-view-dashboard",

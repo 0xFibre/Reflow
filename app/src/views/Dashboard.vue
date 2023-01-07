@@ -1,4 +1,8 @@
 <template>
+  <div class="d-flex mb-3">
+    <h4>Dashboard</h4>
+  </div>
+
   <v-row class="mb-3">
     <template v-for="c in 4">
       <v-col md="3" sm="6" cols="12">
@@ -15,7 +19,9 @@
   <div class="d-flex mt-5 mb-3">
     <h4>Streams</h4>
     <v-spacer />
-    <v-btn rounded flat variant="flat" color="error"> New Stream </v-btn>
+    <v-btn rounded flat variant="flat" color="error" to="/stream/create">
+      New Stream
+    </v-btn>
   </div>
 
   <v-table hover>

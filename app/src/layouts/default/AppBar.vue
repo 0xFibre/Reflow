@@ -9,8 +9,24 @@
           :to="item.path"
         />
       </template>
+
+      <v-divider class="my-5" />
+
+      <v-list-item
+        color="primary"
+        prepend-icon="mdi-plus"
+        title="Create Stream"
+        to="/stream/create"
+      />
     </v-list>
+
+    <template v-slot:append>
+      <div class="pa-2">
+        <v-btn block flat color="info"> Disconnect </v-btn>
+      </div>
+    </template>
   </v-navigation-drawer>
+
   <v-app-bar flat>
     <v-app-bar-nav-icon
       class="d-block d-md-none"

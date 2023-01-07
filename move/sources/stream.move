@@ -1,6 +1,6 @@
 module slide::stream {
-    use std::string::{Self, String};
     use std::option::Option;
+    use std::vector;
 
     use sui::object::{Self, UID, ID};
     use sui::balance::{Self, Balance};
@@ -8,14 +8,22 @@ module slide::stream {
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
     use sui::event::emit;
+    use sui::table::{Self, Table};
+
 
     use slide::error;
+
+    struct StreamRegistry has key {
+        id: UID,
+        all_streams: vector<ID>,
+        user_incoming_streams: Table<address, vector<ID>>,
+        user_outgoing_streams: Table<address, vector<ID>>,
+    }
 
     struct Stream<phantom T> has key {
         id: UID,
         sender: address,
-        receiver: address,
-        description: String,
+        recipient: address,
         stream_per_second: u64,
         amount_withdrawn: u64,
         start_time: u64,
@@ -44,11 +52,21 @@ module slide::stream {
         id: ID
     }
 
-    fun new<T>(deposit: Balance<T>, receiver: address, description: vector<u8>, stream_per_second: u64, start_time: u64, end_time: u64, cliff: Option<u64>, ctx: &mut TxContext): Stream<T> {
+    fun init(ctx: &mut TxContext) {
+        let stream_registry = StreamRegistry {
+            id: object::new(ctx),
+            all_streams: vector::empty(),
+            user_incoming_streams: table::new(ctx),
+            user_outgoing_streams: table::new(ctx),
+        };
+
+        transfer::share_object(stream_registry);
+    }
+
+    fun new<T>(deposit: Balance<T>, recipient: address, stream_per_second: u64, start_time: u64, end_time: u64, cliff: Option<u64>, ctx: &mut TxContext): Stream<T> {
         let stream = Stream<T> {
             id: object::new(ctx),
             sender: tx_context::sender(ctx),
-            description: string::utf8(description),
             amount_withdrawn: 0,
             status: 0,
             stream_per_second,
@@ -56,13 +74,13 @@ module slide::stream {
             end_time,
             cliff,
             deposit,
-            receiver,
+            recipient,
         };
 
         stream
     }
 
-    public entry fun create_stream<T>(amount: u64, coin: &mut Coin<T>, receiver: address, description: vector<u8>, start_time: u64, end_time: u64, cliff: Option<u64>, now: u64, ctx: &mut TxContext) {
+    public entry fun create_stream<T>(registry: &mut StreamRegistry, amount: u64, coin: &mut Coin<T>, recipient: address, start_time: u64, end_time: u64, cliff: Option<u64>, now: u64, ctx: &mut TxContext) {
         assert!(amount != 0, error::zero_deposit());
         assert!(start_time >= now, error::invalid_start_time());
         assert!(start_time < end_time, error::invalid_duration());
@@ -72,7 +90,11 @@ module slide::stream {
         balance::join(&mut balance, coin::into_balance(deposit));
 
         let stream_per_second = amount / (end_time - start_time);
-        let stream = new<T>(balance, receiver, description, stream_per_second, start_time, end_time, cliff, ctx);
+        let stream = new<T>(balance, recipient, stream_per_second, start_time, end_time, cliff, ctx);
+
+        vector::push_back(&mut registry.all_streams, object::id(&stream));
+        register_outgoing_stream(registry, tx_context::sender(ctx), object::id(&stream));
+        register_incoming_stream(registry, recipient, object::id(&stream));
 
         emit (
                 CreateStream { 
@@ -94,7 +116,7 @@ module slide::stream {
                 stream_id: object::id(&stream), 
                 type: 1
             }, 
-            receiver
+            recipient
         );
         transfer::share_object(stream);
     }
@@ -102,10 +124,10 @@ module slide::stream {
     public entry fun withdraw_from_stream<T>(self: &mut Stream<T>, cap: &AccessCap, amount: u64, now: u64, ctx: &mut TxContext) {
         assert!(object::borrow_id(self) == &cap.stream_id, error::stream_id_mismatch());
 
-        let receiver = self.receiver;
-        let receiver_amount = balance_of<T>(self, receiver, now);
+        let recipient = self.recipient;
+        let recipient_amount = balance_of<T>(self, recipient, now);
         
-        assert!(receiver_amount <= amount, error::balance_exceeded());
+        assert!(recipient_amount <= amount, error::balance_exceeded());
 
         let withdrawal = balance::split(&mut self.deposit, amount);
 
@@ -119,17 +141,17 @@ module slide::stream {
             }
         );
 
-        transfer::transfer(coin::from_balance(withdrawal, ctx), self.receiver);
+        transfer::transfer(coin::from_balance(withdrawal, ctx), self.recipient);
     }
 
     public entry fun close_stream<T>(self: &mut Stream<T>, cap: &AccessCap, now: u64, ctx: &mut TxContext) {
         assert!(object::borrow_id(self) == &cap.stream_id, error::stream_id_mismatch());
 
         let sender = self.sender;
-        let receiver = self.receiver;
+        let recipient = self.recipient;
 
-        let receiver_amount = balance_of<T>(self, receiver, now);
-        let receiver_balance = balance::split(&mut self.deposit, receiver_amount);
+        let recipient_amount = balance_of<T>(self, recipient, now);
+        let recipient_balance = balance::split(&mut self.deposit, recipient_amount);
 
         let remaining_balance = balance::value(&self.deposit);
         let sender_balance = balance::split(&mut self.deposit, remaining_balance);
@@ -141,19 +163,19 @@ module slide::stream {
         );
 
         transfer::transfer(coin::from_balance(sender_balance, ctx), sender);
-        transfer::transfer(coin::from_balance(receiver_balance, ctx), receiver);
+        transfer::transfer(coin::from_balance(recipient_balance, ctx), recipient);
     }
 
     fun balance_of<T>(self: &Stream<T>, address: address, now: u64): u64 {
         let delta = delta(self, now);
         let balance = delta * self.stream_per_second;
-        let receiver_balance = balance - self.amount_withdrawn;
+        let recipient_balance = balance - self.amount_withdrawn;
 
         if(address == self.sender) {
             let available_balance = available_balance(self);
-            available_balance - receiver_balance
-        } else if(address == self.receiver) {
-            receiver_balance
+            available_balance - recipient_balance
+        } else if(address == self.recipient) {
+            recipient_balance
         } else {
             abort error::address_unknown()
         }
@@ -170,6 +192,28 @@ module slide::stream {
             now - self.start_time
         } else {
             self.end_time - self.start_time 
+        }
+    }
+
+    fun register_incoming_stream(registry: &mut StreamRegistry, address: address, id: ID) {
+        if(table::contains(&registry.user_incoming_streams, address)) {
+            let streams = table::borrow_mut(&mut registry.user_incoming_streams, address);
+            vector::push_back(streams, id);
+        } else {
+            let streams = vector::empty<ID>();
+            vector::push_back(&mut streams, id);
+            table::add(&mut registry.user_incoming_streams, address, streams);
+        }
+    }
+
+    fun register_outgoing_stream(registry: &mut StreamRegistry, address: address, id: ID) {
+        if(table::contains(&registry.user_outgoing_streams, address)) {
+            let streams = table::borrow_mut(&mut registry.user_outgoing_streams, address);
+            vector::push_back(streams, id);
+        } else {
+            let streams = vector::empty<ID>();
+            vector::push_back(&mut streams, id);
+            table::add(&mut registry.user_outgoing_streams, address, streams);
         }
     }
 }

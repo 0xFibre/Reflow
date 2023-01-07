@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@mdi/font": "7.0.96",
+    "@mysten/sui.js": "^0.21.0",
+    "@mysten/wallet-adapter-wallet-standard": "^0.3.7",
+    "@vueuse/core": "^9.10.0",
     "core-js": "^3.8.3",
     "pinia": "^2.0.23",
     "roboto-fontface": "*",

@@ -1,10 +1,16 @@
 import { createRouter, createWebHistory } from "vue-router";
 
+import Connect from "@/views/Connect.vue";
+import Dashboard from "@/views/Dashboard.vue";
+
 const routes = [
   {
     path: "/",
     component: () => import("@/layouts/default/Default.vue"),
-    children: [],
+    children: [
+      { path: "/connect", name: "Connect", component: Connect },
+      { path: "/dashboard", name: "Dashboard", component: Dashboard },
+    ],
   },
 ];
 

@@ -5,23 +5,45 @@
 
       <v-row>
         <v-col class="py-0" cols="6">
-          <v-select placeholder="Select Token" variant="underlined" />
+          <v-select
+            placeholder="Select Token"
+            variant="underlined"
+            color="primary"
+          />
         </v-col>
         <v-col class="py-0" cols="6">
-          <v-text-field placeholder="Amount to stream" variant="underlined" />
+          <v-text-field
+            placeholder="Amount to stream"
+            variant="underlined"
+            color="primary"
+          />
         </v-col>
       </v-row>
 
-      <v-text-field placeholder="Recipient address" variant="underlined" />
+      <v-text-field
+        placeholder="Recipient address"
+        variant="underlined"
+        color="primary"
+      />
 
       <div class="mt-3">
         <h4>Start Time</h4>
         <v-row>
           <v-col class="py-0" cols="6">
-            <v-text-field type="date" value="2023-01-22" variant="underlined" />
+            <v-text-field
+              type="date"
+              value="2023-01-22"
+              variant="underlined"
+              color="primary"
+            />
           </v-col>
           <v-col class="py-0" cols="6">
-            <v-text-field type="time" value="12:30" variant="underlined" />
+            <v-text-field
+              type="time"
+              value="12:30"
+              variant="underlined"
+              color="primary"
+            />
           </v-col>
         </v-row>
       </div>
@@ -30,10 +52,20 @@
         <h4>End Time</h4>
         <v-row>
           <v-col class="py-0" cols="6">
-            <v-text-field type="date" value="2023-01-22" variant="underlined" />
+            <v-text-field
+              type="date"
+              value="2023-01-22"
+              variant="underlined"
+              color="primary"
+            />
           </v-col>
           <v-col class="py-0" cols="6">
-            <v-text-field type="time" value="12:30" variant="underlined" />
+            <v-text-field
+              type="time"
+              value="12:30"
+              variant="underlined"
+              color="primary"
+            />
           </v-col>
         </v-row>
       </div>

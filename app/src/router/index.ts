@@ -4,6 +4,7 @@ import Connect from "@/views/Connect.vue";
 import Dashboard from "@/views/Dashboard.vue";
 import Streams from "@/views/stream/Streams.vue";
 import CreateStream from "@/views/stream/Create.vue";
+import GetStream from "@/views/stream/Stream.vue";
 
 const routes = [
   {
@@ -13,6 +14,7 @@ const routes = [
       { path: "/connect", name: "Connect", component: Connect },
       { path: "/dashboard", name: "Dashboard", component: Dashboard },
       { path: "/stream/create", name: "CreateStream", component: CreateStream },
+      { path: "/stream/:id", name: "GetStream", component: GetStream },
       { path: "/streams/:type", name: "Streams", component: Streams },
     ],
   },

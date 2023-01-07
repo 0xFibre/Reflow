@@ -19,7 +19,7 @@
   <div class="d-flex mt-5 mb-3">
     <h4>Streams</h4>
     <v-spacer />
-    <v-btn rounded flat variant="flat" color="primary" to="/stream/create">
+    <v-btn flat variant="flat" color="primary" to="/stream/create">
       New Stream
     </v-btn>
   </div>

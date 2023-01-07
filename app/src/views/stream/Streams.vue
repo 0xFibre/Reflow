@@ -4,7 +4,7 @@
       {{ $route.params.type == "incoming" ? "Incoming" : "Outgoing" }} Streams
     </h4>
     <v-spacer />
-    <v-btn rounded flat variant="flat" color="primary" to="/stream/create">
+    <v-btn flat variant="flat" color="primary" to="/stream/create">
       New Stream
     </v-btn>
   </div>

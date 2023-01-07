@@ -3,6 +3,7 @@
     <v-list nav>
       <template v-for="item in items">
         <v-list-item
+          rounded="shaped"
           color="primary"
           :prepend-icon="item.icon"
           :title="item.title"
@@ -13,6 +14,7 @@
       <v-divider class="my-5" />
 
       <v-list-item
+        rounded="shaped"
         color="primary"
         prepend-icon="mdi-plus"
         title="Create Stream"
@@ -22,7 +24,7 @@
 
     <template v-slot:append>
       <div class="pa-2">
-        <v-btn block flat color="info"> Disconnect </v-btn>
+        <v-btn block flat color="secondary"> Disconnect </v-btn>
       </div>
     </template>
   </v-navigation-drawer>

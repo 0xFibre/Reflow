@@ -9,6 +9,7 @@ export const vuetify = createVuetify({
       light: {
         colors: {
           primary: "#6600ff",
+          secondary: "#1a1a1a",
         },
       },
     },

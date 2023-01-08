@@ -43,7 +43,6 @@
             {{ utils.truncateAddress(stream.recipient) }}
           </v-btn>
         </td>
-        <td>{{ "3 Hours" }}</td>
         <td>
           <v-chip
             label
@@ -67,7 +66,7 @@
             color="primary"
             variant="text"
           >
-            view
+            open <v-icon icon="mdi-arrow-right" />
           </v-btn>
         </td>
       </tr>
@@ -80,7 +79,7 @@ import { config } from "@/config";
 import { Stream } from "@/lib/Stream";
 import { utils } from "@/utils";
 
-const heads = ["Stream ID", "Amount", "Progress", "To", "Duration", "Status"];
+const heads = ["Stream ID", "Amount", "Progress", "To", "Status"];
 defineProps<{ streams: Stream[] }>();
 </script>
 

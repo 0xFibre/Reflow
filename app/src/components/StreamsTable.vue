@@ -20,10 +20,10 @@
             {{ utils.truncateAddress(stream.id) }}
           </v-btn>
         </td>
-        <td>{{ stream.deposit }}</td>
+        <td>{{ stream.depositedAmount.dividedBy(10 ** 9) }}</td>
         <td>
           <v-progress-linear
-            :model-value="stream.progress"
+            :model-value="stream.getStreamProgress()"
             color="primary"
             striped
           />
@@ -39,8 +39,22 @@
             {{ utils.truncateAddress(stream.recipient) }}
           </v-btn>
         </td>
-        <td>{{ stream.duration }}</td>
-        <td>{{ stream.status }}</td>
+        <td>{{ "3 hours" }}</td>
+        <td>
+          <v-chip
+            label
+            density="comfortable"
+            :color="
+              stream.status == 0
+                ? 'success'
+                : stream.status == 1
+                ? 'orange'
+                : 'error'
+            "
+          >
+            {{ config.stream.status[stream.status] }}
+          </v-chip>
+        </td>
         <td>
           <v-btn
             flat
@@ -58,6 +72,7 @@
 </template>
 
 <script setup>
+import { config } from "@/config";
 import { utils } from "@/utils";
 
 const heads = ["Stream ID", "Amount", "Progress", "To", "Duration", "Status"];

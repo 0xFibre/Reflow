@@ -172,17 +172,12 @@ module slide::stream {
         let recipient_balance = balance - self.withdrawn_amount;
 
         if(address == self.sender) {
-            let available_balance = available_balance(self);
-            available_balance - recipient_balance
+            balance::value(&self.balance) - recipient_balance
         } else if(address == self.recipient) {
             recipient_balance
         } else {
             abort error::address_unknown()
         }
-    }
-
-    fun available_balance<T>(self: &Stream<T>): u64 {
-        balance::value(&self.balance) - self.withdrawn_amount
     }
 
     fun delta<T>(self: &Stream<T>, now: u64): u64 {

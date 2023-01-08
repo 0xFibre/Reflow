@@ -15,26 +15,4 @@ export const date = {
 
     return `${h.length < 2 ? "0" + h : h}:${m.length < 2 ? "0" + m : m}`;
   },
-
-  formatDuration(startTime: number, endTime: number) {
-    const secs = endTime - startTime;
-    if (secs < 60) {
-      return `${secs} secs`;
-    }
-
-    const mins = Math.round(secs / 60);
-    if (mins < 60) {
-      return `${mins} mins`;
-    }
-
-    const hours = Math.round(mins / 60);
-    if (hours < 60) {
-      return `${hours} hours`;
-    }
-
-    const days = Math.round(hours / 24);
-    if (days < 24) {
-      return `${days} days`;
-    }
-  },
 };

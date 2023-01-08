@@ -7,7 +7,7 @@
         </th>
       </tr>
     </thead>
-    <tbody>
+    <tbody v-if="streams.length > 0">
       <tr v-for="stream in streams" :key="stream.id">
         <td>
           <v-btn
@@ -15,7 +15,7 @@
             density="compact"
             class="pa-0"
             color="primary"
-            variant="link"
+            variant="text"
           >
             {{ utils.truncateAddress(stream.id) }}
           </v-btn>
@@ -23,7 +23,7 @@
         <td>{{ stream.depositedAmount.dividedBy(10 ** 9) }}</td>
         <td>
           <v-progress-linear
-            :model-value="stream.getStreamProgress()"
+            :model-value="stream.getStreamProgress().toNumber()"
             color="primary"
             striped
           />
@@ -34,12 +34,12 @@
             density="compact"
             class="pa-0"
             color="primary"
-            variant="link"
+            variant="text"
           >
             {{ utils.truncateAddress(stream.recipient) }}
           </v-btn>
         </td>
-        <td>{{ "3 hours" }}</td>
+        <td>{{ "3 Hours" }}</td>
         <td>
           <v-chip
             label
@@ -61,7 +61,7 @@
             density="compact"
             class="pa-0"
             color="primary"
-            variant="link"
+            variant="text"
           >
             view
           </v-btn>
@@ -71,10 +71,18 @@
   </v-table>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { config } from "@/config";
+import { Stream } from "@/lib/Stream";
 import { utils } from "@/utils";
 
 const heads = ["Stream ID", "Amount", "Progress", "To", "Duration", "Status"];
-defineProps(["streams"]);
+defineProps<{ streams: Stream[] }>();
 </script>
+
+<style>
+tr,
+td {
+  border: none !important;
+}
+</style>

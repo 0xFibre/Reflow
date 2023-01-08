@@ -96,7 +96,7 @@
 
 <script lang="ts" setup>
 import { reactive } from "vue";
-import { coin, stream } from "@/services";
+import { coin, streamService } from "@/services";
 import { useConnectionStore } from "@/store";
 import { coinList } from "@/config";
 import { BigNumber, date } from "@/utils";
@@ -173,7 +173,7 @@ async function createStream() {
     recipient: state.input.recipient,
   };
 
-  const result = await stream.createStream(data);
+  const result = await streamService.createStream(data);
   console.log(result);
 }
 

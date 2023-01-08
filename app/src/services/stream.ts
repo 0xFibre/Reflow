@@ -1,5 +1,5 @@
 import { env } from "@/config";
-import { CreateStreamData, StreamData } from "@/types";
+import { CreateStreamData } from "@/types";
 import { connection, provider } from "@/services";
 import { SuiMoveObject } from "@mysten/sui.js";
 import { BigNumber, object } from "@/utils";
@@ -68,26 +68,29 @@ export class StreamService {
     objectId: string,
     address: string
   ): Promise<Stream[]> {
-    const streamsObject = await provider.getDynamicFieldObject(
-      objectId,
-      address
-    );
-
-    if (streamsObject.status === "Exists") {
-      const { data } = streamsObject.details as { data: SuiMoveObject };
-      const fields = object.getFields(data);
-
-      const streamsObjects = await provider.getObjectBatch(fields.value);
-      const streams = streamsObjects.map((stream) =>
-        this.buildStreamFromObject(
-          (<{ data: SuiMoveObject }>stream.details).data
-        )
+    try {
+      const streamsObject = await provider.getDynamicFieldObject(
+        objectId,
+        address
       );
 
-      return streams;
-    }
+      if (streamsObject.status === "Exists") {
+        const { data } = streamsObject.details as { data: SuiMoveObject };
+        const fields = object.getFields(data);
 
-    return [];
+        const streamsObjects = await provider.getObjectBatch(fields.value);
+        const streams = streamsObjects.map((stream) =>
+          this.buildStreamFromObject(
+            (<{ data: SuiMoveObject }>stream.details).data
+          )
+        );
+
+        return streams;
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
   }
 
   buildStreamFromObject(data: SuiMoveObject): Stream {

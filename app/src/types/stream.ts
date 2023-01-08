@@ -1,5 +1,7 @@
 import { BigNumber } from "@/utils";
 
+export type StreamType = "incoming" | "outgoing";
+
 export interface CreateStreamData {
   recipient: string;
   amount: string;

@@ -24,28 +24,19 @@
     </v-btn>
   </div>
 
-  <StreamsTable :streams="state.streams" />
+  <StreamsTable :streams="streams.all" />
 </template>
 
-<script setup>
-import { stream } from "@/services";
-import { useConnectionStore } from "@/store";
-import { onMounted, reactive } from "vue";
+<script setup lang="ts">
+import { storeToRefs } from "pinia";
+import { useStreamStore } from "@/store";
+import { onMounted } from "vue";
 import StreamsTable from "@/components/StreamsTable.vue";
 
-const connectionStore = useConnectionStore();
-
-const state = reactive({ streams: [] });
+const streamStore = useStreamStore();
+const { streams } = storeToRefs(streamStore);
 
 onMounted(async () => {
-  const streams = await stream.getStreams(connectionStore.address, "outgoing");
-  state.streams = streams;
+  await streamStore.fetchStreams();
 });
 </script>
-
-<style>
-tr,
-td {
-  border: none !important;
-}
-</style>

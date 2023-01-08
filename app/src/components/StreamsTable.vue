@@ -16,6 +16,8 @@
             class="pa-0"
             color="primary"
             variant="text"
+            target="_blank"
+            :href="`${config.explorerUrl}/object/${stream.id}`"
           >
             {{ utils.truncateAddress(stream.id) }}
           </v-btn>
@@ -35,6 +37,8 @@
             class="pa-0"
             color="primary"
             variant="text"
+            target="_blank"
+            :href="`${config.explorerUrl}/address/${stream.recipient}`"
           >
             {{ utils.truncateAddress(stream.recipient) }}
           </v-btn>

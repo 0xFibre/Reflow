@@ -7,7 +7,7 @@ interface Env {
 }
 
 export const env: Env = {
-  slidePackageId: environment.SLIDE_PACKAGE_ID,
-  streamRegistryId: environment.STREAM_REGISTRY_ID,
-  suiRpcUrl: environment.SUI_RPC_URL,
+  slidePackageId: environment.VITE_SLIDE_PACKAGE_ID,
+  streamRegistryId: environment.VITE_STREAM_REGISTRY_ID,
+  suiRpcUrl: environment.VITE_SUI_RPC_URL,
 };

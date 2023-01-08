@@ -1,7 +1,8 @@
 import { env } from "@/config";
 import { CreateStreamData } from "@/types";
 import { connection, provider } from "@/services";
-import { SuiData, SuiMoveObject } from "@mysten/sui.js";
+import { SuiMoveObject } from "@mysten/sui.js";
+import { object } from "@/utils";
 
 export class Stream {
   public module = "stream";
@@ -30,19 +31,53 @@ export class Stream {
 
   async getStreams(address: string, type?: "incoming" | "outgoing") {
     const registry = await provider.getObject(env.streamRegistryId);
-    if (registry.status === "Exists") {
-      const { data } = registry.details as { data: SuiData & SuiMoveObject };
 
-      console.log(data);
+    if (registry.status === "Exists") {
+      const { data } = registry.details as { data: SuiMoveObject };
+      const fields = object.getFields(data);
+
+      if (!type) {
+        const outgoingId = object.getObjectId(fields.user_outgoing_streams);
+        const incomingId = object.getObjectId(fields.user_incoming_streams);
+
+        return [
+          ...(await this.getStreamsTypeByAddress(incomingId, address)),
+          ...(await this.getStreamsTypeByAddress(outgoingId, address)),
+        ];
+      }
 
       if (type === "outgoing") {
-        const streams = await provider.getDynamicFieldObject(
-          data.fields.user_outgoing_streams.fields.id.id,
-          address
-        );
-
-        console.log(streams);
+        const objectId = object.getObjectId(fields.user_outgoing_streams);
+        return await this.getStreamsTypeByAddress(objectId, address);
+      } else if (type === "incoming") {
+        const objectId = object.getObjectId(fields.user_incoming_streams);
+        return await this.getStreamsTypeByAddress(objectId, address);
       }
+
+      return [];
+    }
+  }
+
+  async getStreamsTypeByAddress(objectId: string, address: string) {
+    const streamsObject = await provider.getDynamicFieldObject(
+      objectId,
+      address
+    );
+
+    if (streamsObject.status === "Exists") {
+      const { data } = streamsObject.details as { data: SuiMoveObject };
+      const fields = object.getFields(data);
+
+      const streamsObjects = await provider.getObjectBatch(fields.value);
+      const streams = streamsObjects.map((stream) => {
+        const { data } = <{ data: SuiMoveObject }>stream.details;
+        return {
+          ...object.getFields(data),
+          id: object.getObjectId(data),
+        };
+      });
+
+      return streams;
     }
   }
 }

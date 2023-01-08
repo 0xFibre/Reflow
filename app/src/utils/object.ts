@@ -4,4 +4,8 @@ function getObjectId(object: SuiMoveObject) {
   return object.fields.id.id;
 }
 
-export const object = { getObjectId };
+function getFields(object: SuiMoveObject) {
+  return object.fields;
+}
+
+export const object = { getObjectId, getFields };

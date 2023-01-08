@@ -1,5 +1,4 @@
 module slide::stream {
-    use std::option::Option;
     use std::vector;
 
     use sui::object::{Self, UID, ID};
@@ -9,7 +8,6 @@ module slide::stream {
     use sui::transfer;
     use sui::event::emit;
     use sui::table::{Self, Table};
-
 
     use slide::error;
 
@@ -28,7 +26,7 @@ module slide::stream {
         amount_withdrawn: u64,
         start_time: u64,
         end_time: u64,
-        cliff: Option<u64>,
+        
         status: u8,
         deposit: Balance<T>,
     }
@@ -63,7 +61,7 @@ module slide::stream {
         transfer::share_object(stream_registry);
     }
 
-    fun new<T>(deposit: Balance<T>, recipient: address, stream_per_second: u64, start_time: u64, end_time: u64, cliff: Option<u64>, ctx: &mut TxContext): Stream<T> {
+    fun new<T>(deposit: Balance<T>, recipient: address, stream_per_second: u64, start_time: u64, end_time: u64, ctx: &mut TxContext): Stream<T> {
         let stream = Stream<T> {
             id: object::new(ctx),
             sender: tx_context::sender(ctx),
@@ -72,7 +70,6 @@ module slide::stream {
             stream_per_second,
             start_time,
             end_time,
-            cliff,
             deposit,
             recipient,
         };
@@ -80,7 +77,7 @@ module slide::stream {
         stream
     }
 
-    public entry fun create_stream<T>(registry: &mut StreamRegistry, amount: u64, coin: &mut Coin<T>, recipient: address, start_time: u64, end_time: u64, cliff: Option<u64>, now: u64, ctx: &mut TxContext) {
+    public entry fun create_stream<T>(registry: &mut StreamRegistry, amount: u64, coin: &mut Coin<T>, recipient: address, start_time: u64, end_time: u64, now: u64, ctx: &mut TxContext) {
         assert!(amount != 0, error::zero_deposit());
         assert!(start_time >= now, error::invalid_start_time());
         assert!(start_time < end_time, error::invalid_duration());
@@ -90,7 +87,7 @@ module slide::stream {
         balance::join(&mut balance, coin::into_balance(deposit));
 
         let stream_per_second = amount / (end_time - start_time);
-        let stream = new<T>(balance, recipient, stream_per_second, start_time, end_time, cliff, ctx);
+        let stream = new<T>(balance, recipient, stream_per_second, start_time, end_time, ctx);
 
         vector::push_back(&mut registry.all_streams, object::id(&stream));
         register_outgoing_stream(registry, tx_context::sender(ctx), object::id(&stream));

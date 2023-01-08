@@ -9,11 +9,12 @@
     </v-btn>
   </div>
 
-  <StreamsTable :streams="streams[$route.params.type as StreamType]" />
+  <StreamsTable
+    :streams="streamStore.getStreams($route.params.type as StreamType)"
+  />
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from "pinia";
 import { onMounted } from "vue";
 import StreamsTable from "@/components/StreamsTable.vue";
 import { useRoute } from "vue-router";
@@ -22,7 +23,6 @@ import { StreamType } from "@/types";
 
 const route = useRoute();
 const streamStore = useStreamStore();
-const { streams } = storeToRefs(streamStore);
 const streamType = route.params.type as "incoming" | "outgoing";
 
 onMounted(async () => {

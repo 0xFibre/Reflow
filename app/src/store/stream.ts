@@ -5,34 +5,36 @@ import { useConnectionStore } from "./connection";
 import { StreamType } from "@/types";
 
 export const useStreamStore = defineStore("stream", {
-  state: () =>
-    ({
-      streams: {
-        all: [],
-        incoming: [],
-        outgoing: [],
-      },
-    } as {
-      streams: {
-        all: Stream[];
-        incoming: Stream[];
-        outgoing: Stream[];
-      };
-    }),
+  state: () => ({ streams: [] } as { streams: Stream[] }),
   getters: {
-    getStreams: (state) => (type: StreamType) => state.streams[type],
+    getStreams: (state) => (type?: StreamType) => {
+      const { address } = useConnectionStore();
+
+      if (!type) return state.streams;
+      if (type === "incoming") {
+        return state.streams.filter((stream) => stream.recipient == address);
+      } else if (type === "outgoing") {
+        return state.streams.filter((stream) => stream.sender == address);
+      }
+
+      return [];
+    },
+
+    getStreamsCount(_) {
+      const self = this;
+
+      return function (type?: StreamType): number {
+        return self.getStreams(type).length;
+      };
+    },
   },
 
   actions: {
     async fetchStreams(type?: StreamType) {
       const { address } = useConnectionStore();
-      const streams = await streamService.getStreams(address!, type);
+      const streams = await streamService.getStreams(address!);
 
-      if (!type) {
-        this.streams.all = streams;
-      } else {
-        this.streams[type] = streams;
-      }
+      this.streams = streams;
     },
   },
 });

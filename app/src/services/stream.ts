@@ -1,10 +1,11 @@
 import { env } from "@/config";
-import { CreateStreamData } from "@/types";
+import { CreateStreamData, StreamData } from "@/types";
 import { connection, provider } from "@/services";
 import { SuiMoveObject } from "@mysten/sui.js";
-import { object } from "@/utils";
+import { BigNumber, object } from "@/utils";
+import { Stream } from "@/lib/Stream";
 
-export class Stream {
+export class StreamService {
   public module = "stream";
 
   async createStream(data: CreateStreamData) {
@@ -29,7 +30,10 @@ export class Stream {
     return response;
   }
 
-  async getStreams(address: string, type?: "incoming" | "outgoing") {
+  async getStreams(
+    address: string,
+    type?: "incoming" | "outgoing"
+  ): Promise<Stream[]> {
     const registry = await provider.getObject(env.streamRegistryId);
 
     if (registry.status === "Exists") {
@@ -37,8 +41,8 @@ export class Stream {
       const fields = object.getFields(data);
 
       if (!type) {
-        const outgoingId = object.getObjectId(fields.user_outgoing_streams);
-        const incomingId = object.getObjectId(fields.user_incoming_streams);
+        const outgoingId = object.getObjectId(fields.outgoing_streams);
+        const incomingId = object.getObjectId(fields.incoming_streams);
 
         return [
           ...(await this.getStreamsTypeByAddress(incomingId, address)),
@@ -47,18 +51,23 @@ export class Stream {
       }
 
       if (type === "outgoing") {
-        const objectId = object.getObjectId(fields.user_outgoing_streams);
+        const objectId = object.getObjectId(fields.outgoing_streams);
         return await this.getStreamsTypeByAddress(objectId, address);
       } else if (type === "incoming") {
-        const objectId = object.getObjectId(fields.user_incoming_streams);
+        const objectId = object.getObjectId(fields.incoming_streams);
         return await this.getStreamsTypeByAddress(objectId, address);
       }
 
       return [];
     }
+
+    return [];
   }
 
-  async getStreamsTypeByAddress(objectId: string, address: string) {
+  async getStreamsTypeByAddress(
+    objectId: string,
+    address: string
+  ): Promise<Stream[]> {
     const streamsObject = await provider.getDynamicFieldObject(
       objectId,
       address
@@ -69,15 +78,35 @@ export class Stream {
       const fields = object.getFields(data);
 
       const streamsObjects = await provider.getObjectBatch(fields.value);
-      const streams = streamsObjects.map((stream) => {
-        const { data } = <{ data: SuiMoveObject }>stream.details;
-        return {
-          ...object.getFields(data),
-          id: object.getObjectId(data),
-        };
-      });
+      const streams = streamsObjects.map((stream) =>
+        this.buildStreamFromObject(
+          (<{ data: SuiMoveObject }>stream.details).data
+        )
+      );
 
       return streams;
     }
+
+    return [];
+  }
+
+  buildStreamFromObject(data: SuiMoveObject): Stream {
+    const fields = object.getFields(data);
+
+    const streamData = {
+      id: object.getObjectId(data),
+      balance: new BigNumber(fields.balance),
+      recipient: fields.recipient,
+      sender: fields.sender,
+      amountPerSecond: new BigNumber(fields.amount_per_second),
+      depositedAmount: new BigNumber(fields.deposited_amount),
+      withdrawnAmount: new BigNumber(fields.withdrawn_amount),
+      status: fields.status,
+      createdAt: Number(fields.created_at),
+      startTime: Number(fields.start_time),
+      endTime: Number(fields.end_time),
+    };
+
+    return new Stream(streamData);
   }
 }

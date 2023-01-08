@@ -14,21 +14,22 @@ module slide::stream {
     struct StreamRegistry has key {
         id: UID,
         all_streams: vector<ID>,
-        user_incoming_streams: Table<address, vector<ID>>,
-        user_outgoing_streams: Table<address, vector<ID>>,
+        incoming_streams: Table<address, vector<ID>>,
+        outgoing_streams: Table<address, vector<ID>>,
     }
 
     struct Stream<phantom T> has key {
         id: UID,
         sender: address,
         recipient: address,
-        stream_per_second: u64,
-        amount_withdrawn: u64,
+        amount_per_second: u64,
+        withdrawn_amount: u64,
+        deposited_amount: u64,
+        created_at: u64,
         start_time: u64,
         end_time: u64,
-        
         status: u8,
-        deposit: Balance<T>,
+        balance: Balance<T>,
     }
 
     struct AccessCap has key {
@@ -54,24 +55,26 @@ module slide::stream {
         let stream_registry = StreamRegistry {
             id: object::new(ctx),
             all_streams: vector::empty(),
-            user_incoming_streams: table::new(ctx),
-            user_outgoing_streams: table::new(ctx),
+            incoming_streams: table::new(ctx),
+            outgoing_streams: table::new(ctx),
         };
 
         transfer::share_object(stream_registry);
     }
 
-    fun new<T>(deposit: Balance<T>, recipient: address, stream_per_second: u64, start_time: u64, end_time: u64, ctx: &mut TxContext): Stream<T> {
+    fun new<T>(balance: Balance<T>, recipient: address, amount_per_second: u64, start_time: u64, end_time: u64, now: u64, ctx: &mut TxContext): Stream<T> {
         let stream = Stream<T> {
             id: object::new(ctx),
             sender: tx_context::sender(ctx),
-            amount_withdrawn: 0,
+            withdrawn_amount: 0,
+            deposited_amount: balance::value(&balance),
             status: 0,
-            stream_per_second,
+            amount_per_second,
             start_time,
             end_time,
-            deposit,
+            balance,
             recipient,
+            created_at: now
         };
 
         stream
@@ -86,8 +89,8 @@ module slide::stream {
         let deposit = coin::take(coin::balance_mut(coin), amount, ctx);
         balance::join(&mut balance, coin::into_balance(deposit));
 
-        let stream_per_second = amount / (end_time - start_time);
-        let stream = new<T>(balance, recipient, stream_per_second, start_time, end_time, ctx);
+        let amount_per_second = amount / (end_time - start_time);
+        let stream = new<T>(balance, recipient, amount_per_second, start_time, end_time, now, ctx);
 
         vector::push_back(&mut registry.all_streams, object::id(&stream));
         register_outgoing_stream(registry, tx_context::sender(ctx), object::id(&stream));
@@ -126,10 +129,10 @@ module slide::stream {
         
         assert!(recipient_amount <= amount, error::balance_exceeded());
 
-        let withdrawal = balance::split(&mut self.deposit, amount);
+        let withdrawal = balance::split(&mut self.balance, amount);
 
-        if(balance::value(&self.deposit) == 0) self.status = 1;
-        self.amount_withdrawn = self.amount_withdrawn + amount;
+        if(balance::value(&self.balance) == 0) self.status = 1;
+        self.withdrawn_amount = self.withdrawn_amount + amount;
         
         emit (
             WithdrawFromStream { 
@@ -148,10 +151,10 @@ module slide::stream {
         let recipient = self.recipient;
 
         let recipient_amount = balance_of<T>(self, recipient, now);
-        let recipient_balance = balance::split(&mut self.deposit, recipient_amount);
+        let recipient_balance = balance::split(&mut self.balance, recipient_amount);
 
-        let remaining_balance = balance::value(&self.deposit);
-        let sender_balance = balance::split(&mut self.deposit, remaining_balance);
+        let remaining_balance = balance::value(&self.balance);
+        let sender_balance = balance::split(&mut self.balance, remaining_balance);
 
         emit (
             CloseStream { 
@@ -165,8 +168,8 @@ module slide::stream {
 
     fun balance_of<T>(self: &Stream<T>, address: address, now: u64): u64 {
         let delta = delta(self, now);
-        let balance = delta * self.stream_per_second;
-        let recipient_balance = balance - self.amount_withdrawn;
+        let balance = delta * self.amount_per_second;
+        let recipient_balance = balance - self.withdrawn_amount;
 
         if(address == self.sender) {
             let available_balance = available_balance(self);
@@ -179,7 +182,7 @@ module slide::stream {
     }
 
     fun available_balance<T>(self: &Stream<T>): u64 {
-        balance::value(&self.deposit) - self.amount_withdrawn
+        balance::value(&self.balance) - self.withdrawn_amount
     }
 
     fun delta<T>(self: &Stream<T>, now: u64): u64 {
@@ -193,24 +196,24 @@ module slide::stream {
     }
 
     fun register_incoming_stream(registry: &mut StreamRegistry, address: address, id: ID) {
-        if(table::contains(&registry.user_incoming_streams, address)) {
-            let streams = table::borrow_mut(&mut registry.user_incoming_streams, address);
+        if(table::contains(&registry.incoming_streams, address)) {
+            let streams = table::borrow_mut(&mut registry.incoming_streams, address);
             vector::push_back(streams, id);
         } else {
             let streams = vector::empty<ID>();
             vector::push_back(&mut streams, id);
-            table::add(&mut registry.user_incoming_streams, address, streams);
+            table::add(&mut registry.incoming_streams, address, streams);
         }
     }
 
     fun register_outgoing_stream(registry: &mut StreamRegistry, address: address, id: ID) {
-        if(table::contains(&registry.user_outgoing_streams, address)) {
-            let streams = table::borrow_mut(&mut registry.user_outgoing_streams, address);
+        if(table::contains(&registry.outgoing_streams, address)) {
+            let streams = table::borrow_mut(&mut registry.outgoing_streams, address);
             vector::push_back(streams, id);
         } else {
             let streams = vector::empty<ID>();
             vector::push_back(&mut streams, id);
-            table::add(&mut registry.user_outgoing_streams, address, streams);
+            table::add(&mut registry.outgoing_streams, address, streams);
         }
     }
 }

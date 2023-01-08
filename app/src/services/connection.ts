@@ -20,11 +20,7 @@ export class Connection {
 
   getWalletAdaptersMeta() {
     const wallets = this.getWalletAdapters();
-
-    return wallets.map((wallet) => ({
-      name: wallet.name,
-      icon: wallet.icon,
-    }));
+    return wallets.map((wallet) => ({ name: wallet.name, icon: wallet.icon }));
   }
 
   getWalletAdapters() {

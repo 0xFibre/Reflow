@@ -4,7 +4,7 @@
 
 <script lang="ts" setup>
 import { onMounted } from "vue";
-import { connection } from "@/utils";
+import { connection } from "@/services";
 import { useConnectionStore } from "@/store";
 
 const store = useConnectionStore();

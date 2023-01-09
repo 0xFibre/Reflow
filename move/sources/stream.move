@@ -10,6 +10,7 @@ module slide::stream {
     use sui::table::{Self, Table};
 
     use slide::error;
+    use slide::fraction::{Self, Fraction};
 
     struct StreamRegistry has key {
         id: UID,
@@ -22,7 +23,7 @@ module slide::stream {
         id: UID,
         sender: address,
         recipient: address,
-        amount_per_second: u64,
+        amount_per_second: Fraction,
         withdrawn_amount: u64,
         deposited_amount: u64,
         created_at: u64,
@@ -62,7 +63,7 @@ module slide::stream {
         transfer::share_object(stream_registry);
     }
 
-    fun new<T>(balance: Balance<T>, recipient: address, amount_per_second: u64, start_time: u64, end_time: u64, now: u64, ctx: &mut TxContext): Stream<T> {
+    fun new<T>(balance: Balance<T>, recipient: address, amount_per_second: Fraction, start_time: u64, end_time: u64, now: u64, ctx: &mut TxContext): Stream<T> {
         let stream = Stream<T> {
             id: object::new(ctx),
             sender: tx_context::sender(ctx),
@@ -89,7 +90,7 @@ module slide::stream {
         let deposit = coin::take(coin::balance_mut(coin), amount, ctx);
         balance::join(&mut balance, coin::into_balance(deposit));
 
-        let amount_per_second = amount / (end_time - start_time);
+        let amount_per_second = fraction::new(amount, (end_time - start_time));
         let stream = new<T>(balance, recipient, amount_per_second, start_time, end_time, now, ctx);
 
         vector::push_back(&mut registry.all_streams, object::id(&stream));
@@ -168,8 +169,8 @@ module slide::stream {
 
     fun balance_of<T>(self: &Stream<T>, address: address, now: u64): u64 {
         let delta = delta(self, now);
-        let balance = delta * self.amount_per_second;
-        let recipient_balance = balance - self.withdrawn_amount;
+        let amount_streamed = fraction::multiply(&self.amount_per_second, delta);
+        let recipient_balance = amount_streamed - self.withdrawn_amount;
 
         if(address == self.sender) {
             balance::value(&self.balance) - recipient_balance

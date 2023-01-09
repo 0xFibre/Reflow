@@ -22,7 +22,14 @@
             {{ utils.truncateAddress(stream.id) }}
           </v-btn>
         </td>
-        <td>{{ stream.depositedAmount.dividedBy(10 ** 9) }}</td>
+        <td>
+          {{
+            stream.depositedAmount.dividedBy(
+              Math.pow(10, stream.coinMetadata.decimals)
+            )
+          }}
+          {{ stream.coinMetadata.symbol }}
+        </td>
         <td>
           <v-progress-linear
             :model-value="stream.getStreamProgress().toNumber()"

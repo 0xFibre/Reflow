@@ -23,7 +23,7 @@ import { StreamType } from "@/types";
 
 const route = useRoute();
 const streamStore = useStreamStore();
-const streamType = route.params.type as "incoming" | "outgoing";
+const streamType = route.params.type as StreamType;
 
 onMounted(async () => {
   await streamStore.fetchStreams(streamType);

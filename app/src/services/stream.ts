@@ -130,4 +130,9 @@ export class StreamService {
 
     return new Stream(streamData);
   }
+
+  async getStreamEvents(objectId: string) {
+    const events = provider.getEvents({ Object: objectId }, null, null);
+    return events;
+  }
 }

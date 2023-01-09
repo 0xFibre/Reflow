@@ -43,6 +43,10 @@ export const useStreamStore = defineStore("stream", {
 
     async fetchStream(objectId: string) {
       const stream = await streamService.getStream(objectId);
+      const events = await streamService.getStreamEvents(objectId);
+
+      console.log(events);
+
       this.stream = stream;
     },
   },

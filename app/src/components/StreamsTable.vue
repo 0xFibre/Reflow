@@ -65,6 +65,7 @@
             class="pa-0"
             color="primary"
             variant="text"
+            :to="`/stream/${stream.id}`"
           >
             open <v-icon icon="mdi-arrow-right" />
           </v-btn>

@@ -43,8 +43,7 @@ export class Stream {
   }
 
   get recipientBalance() {
-    let balance = this.amountPerSecond.multipliedBy(this.delta());
-    return balance.minus(this.withdrawnAmount);
+    return this.streamedAmount.minus(this.withdrawnAmount);
   }
 
   get senderBalance() {
@@ -52,8 +51,13 @@ export class Stream {
     return this.balance.minus(recipientBalance);
   }
 
-  getStreamProgress() {
-    const totalStreamed = this.amountPerSecond.multipliedBy(this.delta());
-    return totalStreamed.dividedBy(this.depositedAmount).multipliedBy(100);
+  get streamedAmount() {
+    return this.amountPerSecond.multipliedBy(this.delta());
+  }
+
+  get streamProgress() {
+    return this.streamedAmount
+      .dividedBy(this.depositedAmount)
+      .multipliedBy(100);
   }
 }

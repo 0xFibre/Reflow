@@ -5,24 +5,32 @@ import { useConnectionStore } from "./connection";
 import { StreamType } from "@/types";
 
 export const useStreamStore = defineStore("stream", {
-  state: () =>
-    ({ stream: undefined, streams: [] } as {
-      stream?: Stream;
-      streams: Stream[];
-    }),
+  state: (): {
+    streams: Stream[];
+    stream?: Stream;
+  } => ({
+    stream: undefined,
+    streams: [],
+  }),
   getters: {
-    getStreams: (state) => (type?: StreamType) => {
-      const { address } = useConnectionStore();
+    getStreams:
+      (state) =>
+      (type?: StreamType): Stream[] => {
+        const { address } = useConnectionStore();
 
-      if (!type) return state.streams;
-      if (type === "incoming") {
-        return state.streams.filter((stream) => stream.recipient == address);
-      } else if (type === "outgoing") {
-        return state.streams.filter((stream) => stream.sender == address);
-      }
+        if (!type) return <Stream[]>state.streams;
+        if (type === "incoming") {
+          return <Stream[]>(
+            state.streams.filter((stream) => stream.recipient == address)
+          );
+        } else if (type === "outgoing") {
+          return <Stream[]>(
+            state.streams.filter((stream) => stream.sender == address)
+          );
+        }
 
-      return [];
-    },
+        return [];
+      },
 
     getStreamsCount(_) {
       const self = this;

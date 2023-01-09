@@ -29,36 +29,36 @@
         <div class="mt-5">
           <div class="my-1 d-flex justify-space-between">
             <span>Amount Streamed</span>
-            <span
-              >{{
+            <span>
+              {{
                 stream.recipientBalance.dividedBy(
                   Math.pow(10, stream.coinMetadata.decimals)
                 )
               }}
-              SUI</span
-            >
+              {{ stream.coinMetadata.symbol }}
+            </span>
           </div>
           <div class="my-1 d-flex justify-space-between">
             <span>Amount Withdrawn</span>
-            <span
-              >{{
+            <span>
+              {{
                 stream.withdrawnAmount.dividedBy(
                   Math.pow(10, stream.coinMetadata.decimals)
                 )
               }}
-              SUI</span
-            >
+              {{ stream.coinMetadata.symbol }}
+            </span>
           </div>
           <div class="my-1 d-flex justify-space-between">
             <span>Remaining Balance</span>
-            <span
-              >{{
+            <span>
+              {{
                 stream.balance.dividedBy(
                   Math.pow(10, stream.coinMetadata.decimals)
                 )
               }}
-              SUI</span
-            >
+              {{ stream.coinMetadata.symbol }}
+            </span>
           </div>
         </div>
       </div>

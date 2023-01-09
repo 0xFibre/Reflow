@@ -2,7 +2,7 @@
   <v-row v-if="stream">
     <v-col md="6" cols="12" class="mx-auto">
       <div class="d-flex mb-5">
-        <h3>Incoming Stream</h3>
+        <h3>Stream</h3>
 
         <v-spacer />
 
@@ -12,54 +12,69 @@
           class="pa-0"
           color="primary"
           variant="text"
+          id="actions"
         >
           Actions
         </v-btn>
+
+        <v-menu location="bottom" activator="#actions">
+          <v-list density="comfortable">
+            <template v-for="(action, i) in actions" :key="i">
+              <v-list-item
+                :title="action.title"
+                :prepend-icon="action.icon"
+                v-if="
+                  action.for == 'incoming'
+                    ? stream.recipient == address
+                    : action.for == 'outgoing'
+                    ? stream.sender == address
+                    : action.for == 'both'
+                    ? address == stream.sender || address == stream.recipient
+                    : true
+                "
+                :value="i"
+              />
+            </template>
+          </v-list>
+        </v-menu>
       </div>
 
-      <div>
-        <v-progress-linear
-          :model-value="stream.getStreamProgress().toNumber()"
-          color="primary"
-          height="20"
-          class="my-3"
-          striped
-        />
+      <v-progress-linear
+        :model-value="stream.streamProgress.toNumber()"
+        color="primary"
+        height="20"
+        class="my-5"
+        striped
+      />
 
-        <div class="mt-5">
-          <div class="my-1 d-flex justify-space-between">
-            <span>Amount Streamed</span>
-            <span>
-              {{
-                stream.recipientBalance.dividedBy(
-                  Math.pow(10, stream.coinMetadata.decimals)
-                )
-              }}
-              {{ stream.coinMetadata.symbol }}
-            </span>
-          </div>
-          <div class="my-1 d-flex justify-space-between">
-            <span>Amount Withdrawn</span>
-            <span>
-              {{
-                stream.withdrawnAmount.dividedBy(
-                  Math.pow(10, stream.coinMetadata.decimals)
-                )
-              }}
-              {{ stream.coinMetadata.symbol }}
-            </span>
-          </div>
-          <div class="my-1 d-flex justify-space-between">
-            <span>Remaining Balance</span>
-            <span>
-              {{
-                stream.balance.dividedBy(
-                  Math.pow(10, stream.coinMetadata.decimals)
-                )
-              }}
-              {{ stream.coinMetadata.symbol }}
-            </span>
-          </div>
+      <div class="mt-5">
+        <div class="my-1 d-flex justify-space-between">
+          <span>Streamed</span>
+          <span>
+            {{
+              stream.streamedAmount.dividedBy(
+                Math.pow(10, stream.coinMetadata.decimals)
+              )
+            }}
+            of
+            {{
+              stream.depositedAmount.dividedBy(
+                Math.pow(10, stream.coinMetadata.decimals)
+              )
+            }}
+            {{ stream.coinMetadata.symbol }}
+          </span>
+        </div>
+        <div class="my-1 d-flex justify-space-between">
+          <span>Withdrawn</span>
+          <span>
+            {{
+              stream.withdrawnAmount.dividedBy(
+                Math.pow(10, stream.coinMetadata.decimals)
+              )
+            }}
+            {{ stream.coinMetadata.symbol }}
+          </span>
         </div>
       </div>
 
@@ -129,7 +144,7 @@
 
 <script lang="ts" setup>
 import { config } from "@/config";
-import { useStreamStore } from "@/store";
+import { useConnectionStore, useStreamStore } from "@/store";
 import { utils, date } from "@/utils";
 import { storeToRefs } from "pinia";
 import { onMounted, reactive } from "vue";
@@ -141,14 +156,31 @@ import { useRoute } from "vue-router";
 
 const route = useRoute();
 const streamStore = useStreamStore();
-// const state: State = reactive({ stream: undefined });
+const connectionStore = useConnectionStore();
+
 const { stream } = storeToRefs(streamStore);
+const { address } = storeToRefs(connectionStore);
+
+const actions = [
+  { title: "Add funds", icon: "mdi-cash-plus", for: "outgoing" },
+  { title: "Withdraw funds", icon: "mdi-cash-minus", for: "incoming" },
+  { title: "Stop stream", icon: "mdi-cancel", for: "both" },
+  { title: "Copy stream URL", icon: "mdi-link" },
+];
+
+// const state: State = reactive({ stream: undefined });
 
 onMounted(async () => {
   await streamStore.fetchStream(<string>route.params.id);
 
-  setInterval(async () => {
-    await streamStore.fetchStream(<string>route.params.id);
-  }, 1000);
+  const interval = setInterval(fetchStream, 1000);
+
+  async function fetchStream() {
+    if (!route.params.id || route.name !== "GetStream") {
+      clearInterval(interval);
+    } else {
+      await streamStore.fetchStream(<string>route.params.id);
+    }
+  }
 });
 </script>

@@ -112,12 +112,15 @@ export class StreamService {
       .substring(data.type.lastIndexOf("<"))
       .slice(1, -1);
 
+    const fraction = object.getFields(fields.amount_per_second);
     const streamData = {
       id: object.getObjectId(data),
       balance: new BigNumber(fields.balance),
       recipient: fields.recipient,
       sender: fields.sender,
-      amountPerSecond: new BigNumber(fields.amount_per_second),
+      amountPerSecond: new BigNumber(fraction.numerator).dividedBy(
+        fraction.denominator
+      ),
       depositedAmount: new BigNumber(fields.deposited_amount),
       withdrawnAmount: new BigNumber(fields.withdrawn_amount),
       status: fields.status,

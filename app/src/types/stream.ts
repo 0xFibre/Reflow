@@ -1,4 +1,5 @@
 import { BigNumber } from "@/utils";
+import { CoinMetadata } from "@mysten/sui.js";
 
 export type StreamType = "incoming" | "outgoing";
 
@@ -15,6 +16,7 @@ export interface StreamData {
   id: string;
   sender: string;
   recipient: string;
+  coinType: string;
   depositedAmount: BigNumber;
   withdrawnAmount: BigNumber;
   createdAt: number;
@@ -23,4 +25,5 @@ export interface StreamData {
   amountPerSecond: BigNumber;
   status: number;
   balance: BigNumber;
+  coinMetadata: CoinMetadata;
 }

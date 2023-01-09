@@ -5,7 +5,11 @@ import { useConnectionStore } from "./connection";
 import { StreamType } from "@/types";
 
 export const useStreamStore = defineStore("stream", {
-  state: () => ({ streams: [] } as { streams: Stream[] }),
+  state: () =>
+    ({ stream: undefined, streams: [] } as {
+      stream?: Stream;
+      streams: Stream[];
+    }),
   getters: {
     getStreams: (state) => (type?: StreamType) => {
       const { address } = useConnectionStore();
@@ -35,6 +39,11 @@ export const useStreamStore = defineStore("stream", {
       const streams = await streamService.getStreams(address!);
 
       this.streams = streams;
+    },
+
+    async fetchStream(objectId: string) {
+      const stream = await streamService.getStream(objectId);
+      this.stream = stream;
     },
   },
 });

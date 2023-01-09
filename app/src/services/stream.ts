@@ -79,9 +79,11 @@ export class StreamService {
         const fields = object.getFields(data);
 
         const streamsObjects = await provider.getObjectBatch(fields.value);
-        const streams = streamsObjects.map((stream) =>
-          this.buildStreamFromObject(
-            (<{ data: SuiMoveObject }>stream.details).data
+        const streams = await Promise.all(
+          streamsObjects.map((stream) =>
+            this.buildStreamFromObject(
+              (<{ data: SuiMoveObject }>stream.details).data
+            )
           )
         );
 
@@ -93,8 +95,22 @@ export class StreamService {
     }
   }
 
-  buildStreamFromObject(data: SuiMoveObject): Stream {
+  async getStream(objectId: string): Promise<Stream> {
+    const stream = await provider.getObject(objectId);
+
+    if (stream.status === "Exists") {
+      const { data } = stream.details as { data: SuiMoveObject };
+      return await this.buildStreamFromObject(data);
+    }
+
+    throw new Error("");
+  }
+
+  async buildStreamFromObject(data: SuiMoveObject): Promise<Stream> {
     const fields = object.getFields(data);
+    const coinType = data.type
+      .substring(data.type.lastIndexOf("<"))
+      .slice(1, -1);
 
     const streamData = {
       id: object.getObjectId(data),
@@ -108,6 +124,8 @@ export class StreamService {
       createdAt: Number(fields.created_at),
       startTime: Number(fields.start_time),
       endTime: Number(fields.end_time),
+      coinType,
+      coinMetadata: await provider.getCoinMetadata(coinType),
     };
 
     return new Stream(streamData);

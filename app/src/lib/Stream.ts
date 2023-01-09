@@ -1,10 +1,13 @@
+import { provider } from "@/services";
 import { StreamData } from "@/types";
 import { BigNumber } from "@/utils";
+import { CoinMetadata } from "@mysten/sui.js";
 
 export class Stream {
   public id: string;
   public sender: string;
   public recipient: string;
+  public coinType: string;
   public depositedAmount: BigNumber;
   public withdrawnAmount: BigNumber;
   public createdAt: number;
@@ -13,6 +16,7 @@ export class Stream {
   public amountPerSecond: BigNumber;
   public status: number;
   public balance: BigNumber;
+  public coinMetadata: CoinMetadata;
 
   constructor(data: StreamData) {
     this.id = data.id;
@@ -25,7 +29,9 @@ export class Stream {
     this.endTime = data.endTime;
     this.amountPerSecond = data.amountPerSecond;
     this.status = data.status;
+    this.coinType = data.coinType;
     this.balance = data.balance;
+    this.coinMetadata = data.coinMetadata;
   }
 
   delta(): number {
@@ -36,13 +42,13 @@ export class Stream {
     return this.endTime - this.startTime;
   }
 
-  getRecipientBalance() {
+  get recipientBalance() {
     let balance = this.amountPerSecond.multipliedBy(this.delta());
     return balance.minus(this.withdrawnAmount);
   }
 
-  getSenderBalance() {
-    const recipientBalance = this.getRecipientBalance();
+  get senderBalance() {
+    const recipientBalance = this.recipientBalance;
     return this.balance.minus(recipientBalance);
   }
 

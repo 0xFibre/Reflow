@@ -1,4 +1,4 @@
-import { secondsToMinutes, secondsToHours, minutesToHours } from "date-fns";
+import { format } from "date-fns";
 
 export const date = {
   getHtmlDateValue(date: Date) {
@@ -14,5 +14,9 @@ export const date = {
     const m = String(date.getMinutes());
 
     return `${h.length < 2 ? "0" + h : h}:${m.length < 2 ? "0" + m : m}`;
+  },
+
+  formatDate(date: Date, fmt = "MMMM d, yyyy h:mm aa") {
+    return format(date, fmt);
   },
 };

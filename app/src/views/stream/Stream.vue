@@ -1,24 +1,74 @@
 <template>
-  <v-row>
-    <v-col md="4">
+  <v-row v-if="stream">
+    <v-col md="6" cols="12" class="mx-auto">
       <div class="d-flex mb-5">
-        <h3>Stream Details</h3>
+        <h3>Incoming Stream</h3>
+
+        <v-spacer />
+
+        <v-btn
+          flat
+          density="compact"
+          class="pa-0"
+          color="primary"
+          variant="text"
+        >
+          Actions
+        </v-btn>
       </div>
 
-      <v-progress-circular
-        :rotate="360"
-        size="200"
-        width="20"
-        model-value="30"
-        color="error"
-        class="d-block mx-auto"
-      >
-        <h1 style="position: absolute; top: 75px">{{ "30%" }}</h1>
-      </v-progress-circular>
+      <div>
+        <v-progress-linear
+          :model-value="stream.getStreamProgress().toNumber()"
+          color="primary"
+          height="20"
+          class="my-3"
+          striped
+        />
 
-      <h3 class="mt-3 mb-5 text-center">200 of 3900 SUI</h3>
+        <div class="mt-5">
+          <div class="my-1 d-flex justify-space-between">
+            <span>Amount Streamed</span>
+            <span
+              >{{
+                stream.recipientBalance.dividedBy(
+                  Math.pow(10, stream.coinMetadata.decimals)
+                )
+              }}
+              SUI</span
+            >
+          </div>
+          <div class="my-1 d-flex justify-space-between">
+            <span>Amount Withdrawn</span>
+            <span
+              >{{
+                stream.withdrawnAmount.dividedBy(
+                  Math.pow(10, stream.coinMetadata.decimals)
+                )
+              }}
+              SUI</span
+            >
+          </div>
+          <div class="my-1 d-flex justify-space-between">
+            <span>Remaining Balance</span>
+            <span
+              >{{
+                stream.balance.dividedBy(
+                  Math.pow(10, stream.coinMetadata.decimals)
+                )
+              }}
+              SUI</span
+            >
+          </div>
+        </div>
+      </div>
 
-      <div class="d-flex my-3">
+      <v-tabs class="mt-5" density="compact">
+        <v-tab v-for="tab in ['Details', 'History']">{{ tab }}</v-tab>
+      </v-tabs>
+      <v-divider class="mb-5" />
+
+      <div class="d-flex">
         <span>Stream ID</span>
         <v-spacer />
         <v-btn
@@ -27,19 +77,21 @@
           class="pa-0"
           color="primary"
           variant="text"
+          target="_blank"
+          :href="`${config.explorerUrl}/object/${stream.id}`"
         >
-          {{ utils.truncateAddress(address) }}
+          {{ utils.truncateAddress(stream.id) }}
         </v-btn>
       </div>
       <div class="d-flex my-3">
-        <span>Start Time</span>
+        <span>Start Date</span>
         <v-spacer />
-        <span>2, Dec 2022 4:30PM</span>
+        <span>{{ date.formatDate(new Date(stream.startTime * 1000)) }}</span>
       </div>
       <div class="d-flex my-3">
-        <span>End Time</span>
+        <span>End Date</span>
         <v-spacer />
-        <span>2, Dec 2023 4:30PM</span>
+        <span>{{ date.formatDate(new Date(stream.endTime * 1000)) }}</span>
       </div>
       <div class="d-flex my-3">
         <span>Sender</span>
@@ -50,12 +102,14 @@
           class="pa-0"
           color="primary"
           variant="text"
+          target="_blank"
+          :href="`${config.explorerUrl}/address/${stream.sender}`"
         >
-          {{ utils.truncateAddress(address) }}
+          {{ utils.truncateAddress(stream.sender) }}
         </v-btn>
       </div>
       <div class="d-flex my-3">
-        <span>Receiver</span>
+        <span>Recipient</span>
         <v-spacer />
         <v-btn
           flat
@@ -63,16 +117,38 @@
           class="pa-0"
           color="primary"
           variant="text"
+          target="_blank"
+          :href="`${config.explorerUrl}/address/${stream.recipient}`"
         >
-          {{ utils.truncateAddress(address) }}
+          {{ utils.truncateAddress(stream.recipient) }}
         </v-btn>
       </div>
     </v-col>
-    <v-col md="6"> </v-col>
   </v-row>
 </template>
 
 <script lang="ts" setup>
-import { utils } from "@/utils";
-let address = "0x14ab74bea7cc1e2be3617447f677963481632af6";
+import { config } from "@/config";
+import { useStreamStore } from "@/store";
+import { utils, date } from "@/utils";
+import { storeToRefs } from "pinia";
+import { onMounted, reactive } from "vue";
+import { useRoute } from "vue-router";
+
+// interface State {
+//   stream?: Stream;
+// }
+
+const route = useRoute();
+const streamStore = useStreamStore();
+// const state: State = reactive({ stream: undefined });
+const { stream } = storeToRefs(streamStore);
+
+onMounted(async () => {
+  await streamStore.fetchStream(<string>route.params.id);
+
+  setInterval(async () => {
+    await streamStore.fetchStream(<string>route.params.id);
+  }, 1000);
+});
 </script>

@@ -32,7 +32,7 @@
         </td>
         <td>
           <v-progress-linear
-            :model-value="stream.getStreamProgress().toNumber()"
+            :model-value="stream.streamProgress.toNumber()"
             color="primary"
             striped
           />

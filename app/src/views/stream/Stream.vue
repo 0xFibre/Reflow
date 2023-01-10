@@ -18,27 +18,11 @@
           Actions
         </v-btn>
 
-        <v-menu location="bottom" activator="#actions">
-          <v-list density="comfortable">
-            <template v-for="(action, i) in actions" :key="i">
-              <v-list-item
-                :title="action.title"
-                :prepend-icon="action.icon"
-                v-if="
-                  action.for == 'recipient'
-                    ? stream.recipient == address
-                    : action.for == 'sender'
-                    ? stream.sender == address
-                    : action.for == 'both'
-                    ? address == stream.sender || address == stream.recipient
-                    : true
-                "
-                :value="i"
-                @click="action.click?.call(null, action.value)"
-              />
-            </template>
-          </v-list>
-        </v-menu>
+        <StreamMenu
+          :stream="(stream as Stream)"
+          :address="address!"
+          :actions="menuActions"
+        />
       </div>
 
       <v-progress-linear
@@ -129,6 +113,7 @@
 import LinkInfoItem from "@/components/display/LinkInfoItem.vue";
 import TextInfoItem from "@/components/display/TextInfoItem.vue";
 import Loader from "@/components/Loader.vue";
+import StreamMenu from "@/components/menu/StreamMenu.vue";
 import StopStream from "@/components/modals/StopStream.vue";
 import Withdraw from "@/components/modals/Withdraw.vue";
 import { config } from "@/config";
@@ -146,7 +131,7 @@ const connectionStore = useConnectionStore();
 const { stream } = storeToRefs(streamStore);
 const { address } = storeToRefs(connectionStore);
 
-const actions = [
+const menuActions = [
   { title: "Add funds", icon: "mdi-cash-plus", for: "sender" },
   {
     title: "Withdraw funds",

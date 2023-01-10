@@ -41,28 +41,50 @@
     />
 
     <v-app-bar-title class="d-block d-lg-none">
-      <h3>Slide Cash</h3>
+      <h3>Reflow</h3>
     </v-app-bar-title>
 
     <v-spacer />
 
-    <v-btn
-      id="menu-activator"
-      rounded
-      flat
-      variant="tonal"
-      prepend-icon="mdi-account-circle-outline"
-    >
-      {{ connection.address ? utils.truncateAddress(connection.address) : "" }}
-    </v-btn>
+    <div class="d-block d-sm-none">
+      <v-btn id="menu-activator" flat icon="mdi-account-circle-outline" />
+      <v-menu activator="#menu-activator">
+        <v-list>
+          <v-list-item
+            v-for="(item, index) in items"
+            :key="index"
+            :value="index"
+          >
+            <v-list-item-title>{{ item.title }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </div>
 
-    <v-menu activator="#menu-activator">
-      <v-list>
-        <v-list-item v-for="(item, index) in items" :key="index" :value="index">
-          <v-list-item-title>{{ item.title }}</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-menu>
+    <div class="d-none d-sm-block me-5">
+      <v-btn
+        id="menu-activator-sm"
+        rounded
+        flat
+        prepend-icon="mdi-account-circle-outline"
+      >
+        {{
+          connection.address ? utils.truncateAddress(connection.address) : ""
+        }}
+      </v-btn>
+
+      <v-menu activator="#menu-activator-sm">
+        <v-list>
+          <v-list-item
+            v-for="(item, index) in items"
+            :key="index"
+            :value="index"
+          >
+            <v-list-item-title>{{ item.title }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </div>
   </v-app-bar>
 </template>
 

@@ -1,5 +1,9 @@
 <template>
   <v-navigation-drawer v-model="drawer">
+    <div class="text-center my-3">
+      <h2>Reflow</h2>
+    </div>
+
     <v-list nav>
       <template v-for="item in items">
         <v-list-item
@@ -31,12 +35,14 @@
 
   <v-app-bar flat>
     <v-app-bar-nav-icon
-      class="d-block d-md-none"
+      class="d-block d-lg-none"
       variant="text"
       @click.stop="drawer = !drawer"
     />
 
-    <v-app-bar-title> Slide Cash </v-app-bar-title>
+    <v-app-bar-title class="d-block d-lg-none">
+      <h3>Slide Cash</h3>
+    </v-app-bar-title>
 
     <v-spacer />
 

@@ -7,12 +7,14 @@
     <v-col md="3" sm="6" cols="12">
       <DashboardCard
         title="Incoming Streams"
+        :loading="state.loading"
         :count="streamStore.getStreamsCount('incoming')"
       />
     </v-col>
     <v-col md="3" sm="6" cols="12">
       <DashboardCard
         title="Outgoing Streams"
+        :loading="state.loading"
         :count="streamStore.getStreamsCount('outgoing')"
       />
     </v-col>
@@ -26,18 +28,23 @@
     </v-btn>
   </div>
 
-  <StreamsTable :streams="streamStore.getStreams()" />
+  <Loader v-if="state.loading" />
+  <StreamsTable v-else :streams="streamStore.getStreams()" />
 </template>
 
 <script setup lang="ts">
 import { useStreamStore } from "@/store";
-import { onMounted } from "vue";
+import { onMounted, reactive } from "vue";
 import StreamsTable from "@/components/StreamsTable.vue";
 import DashboardCard from "@/components/DashboardCard.vue";
+import Loader from "@/components/Loader.vue";
 
 const streamStore = useStreamStore();
+const state: { loading: boolean } = reactive({ loading: false });
 
 onMounted(async () => {
+  state.loading = true;
   await streamStore.fetchStreams();
+  state.loading = false;
 });
 </script>

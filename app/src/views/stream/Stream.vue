@@ -109,7 +109,7 @@
           target="_blank"
           :href="`${config.explorerUrl}/object/${stream.id}`"
         >
-          {{ utils.truncateAddress(stream.id) }}
+          {{ utils.truncate0x(stream.id) }}
         </v-btn>
       </div>
       <div class="d-flex my-3">
@@ -134,7 +134,7 @@
           target="_blank"
           :href="`${config.explorerUrl}/address/${stream.sender}`"
         >
-          {{ utils.truncateAddress(stream.sender) }}
+          {{ utils.truncate0x(stream.sender) }}
         </v-btn>
       </div>
       <div class="d-flex my-3">
@@ -149,7 +149,7 @@
           target="_blank"
           :href="`${config.explorerUrl}/address/${stream.recipient}`"
         >
-          {{ utils.truncateAddress(stream.recipient) }}
+          {{ utils.truncate0x(stream.recipient) }}
         </v-btn>
       </div>
     </v-col>

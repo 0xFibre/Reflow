@@ -1,5 +1,5 @@
 export const utils = {
-  truncateAddress(address: string) {
+  truncate0x(address: string) {
     const regex = /^(0x[a-zA-Z0-9]{5})[a-zA-Z0-9]+([a-zA-Z0-9]{5})$/;
     const match = address.match(regex);
 

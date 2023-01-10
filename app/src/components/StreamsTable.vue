@@ -19,7 +19,7 @@
             target="_blank"
             :href="`${config.explorerUrl}/object/${stream.id}`"
           >
-            {{ utils.truncateAddress(stream.id) }}
+            {{ utils.truncate0x(stream.id) }}
           </v-btn>
         </td>
         <td>
@@ -47,7 +47,7 @@
             target="_blank"
             :href="`${config.explorerUrl}/address/${stream.recipient}`"
           >
-            {{ utils.truncateAddress(stream.recipient) }}
+            {{ utils.truncate0x(stream.recipient) }}
           </v-btn>
         </td>
         <td>

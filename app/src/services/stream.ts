@@ -1,5 +1,9 @@
 import { env } from "@/config";
-import { CreateStreamData, WithdrawFromStreamData } from "@/types";
+import {
+  CreateStreamData,
+  StopStreamData,
+  WithdrawFromStreamData,
+} from "@/types";
 import { connection, provider } from "@/services";
 import { SuiMoveObject } from "@mysten/sui.js";
 import { BigNumber, object } from "@/utils";
@@ -37,6 +41,20 @@ export class StreamService {
       module: this.module,
       package: env.slidePackageId,
       valueArgs: [data.streamId, data.accessCapId, data.amount, now],
+      typeArgs: [data.coinType],
+    };
+
+    const response = await connection.executeMoveCall(payload);
+    return response;
+  }
+
+  async stopStream(data: StopStreamData) {
+    const now = String(Math.round(Date.now() / 1000));
+    const payload = {
+      function: "close_stream",
+      module: this.module,
+      package: env.slidePackageId,
+      valueArgs: [data.streamId, data.accessCapId, now],
       typeArgs: [data.coinType],
     };
 

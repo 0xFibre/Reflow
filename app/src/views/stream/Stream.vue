@@ -160,11 +160,18 @@
       :address="address!"
       :stream="(stream as Stream)"
     />
+    <StopStream
+      :show="state.modals['stop']"
+      @toggle="toggleModal('stop')"
+      :address="address!"
+      :stream="(stream as Stream)"
+    />
   </v-row>
 </template>
 
 <script lang="ts" setup>
 import Loader from "@/components/Loader.vue";
+import StopStream from "@/components/modals/StopStream.vue";
 import Withdraw from "@/components/modals/Withdraw.vue";
 import { config } from "@/config";
 import { Stream } from "@/lib/Stream";
@@ -190,7 +197,13 @@ const actions = [
     value: "withdraw",
     click: toggleModal,
   },
-  { title: "Stop stream", icon: "mdi-cancel", for: "both" },
+  {
+    title: "Stop stream",
+    icon: "mdi-cancel",
+    for: "both",
+    value: "stop",
+    click: toggleModal,
+  },
   { title: "Copy stream URL", icon: "mdi-link" },
 ];
 

@@ -1,6 +1,6 @@
 <template>
   <v-navigation-drawer v-model="drawer">
-    <div class="text-center my-3">
+    <div class="text-center my-3 no-select">
       <h2>Reflow</h2>
     </div>
 
@@ -40,7 +40,7 @@
       @click.stop="drawer = !drawer"
     />
 
-    <v-app-bar-title class="d-block d-lg-none">
+    <v-app-bar-title class="d-block d-lg-none no-select">
       <h3>Reflow</h3>
     </v-app-bar-title>
 

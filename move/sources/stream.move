@@ -94,8 +94,9 @@ module reflow::stream {
         let stream = new<T>(balance, recipient, amount_per_second, start_time, end_time, now, ctx);
 
         vector::push_back(&mut registry.all_streams, object::id(&stream));
-        register_outgoing_stream(registry, tx_context::sender(ctx), object::id(&stream));
-        register_incoming_stream(registry, recipient, object::id(&stream));
+        
+        register_stream(&mut registry.outgoing_streams, tx_context::sender(ctx), object::id(&stream));
+        register_stream(&mut registry.incoming_streams, recipient, object::id(&stream));
 
         emit (
                 CreateStream { 
@@ -198,25 +199,14 @@ module reflow::stream {
         }
     }
 
-    fun register_incoming_stream(registry: &mut StreamRegistry, address: address, id: ID) {
-        if(table::contains(&registry.incoming_streams, address)) {
-            let streams = table::borrow_mut(&mut registry.incoming_streams, address);
+    fun register_stream(streams_table: &mut Table<address, vector<ID>>, address: address, id: ID) {
+        if(table::contains(streams_table, address)) {
+            let streams = table::borrow_mut(streams_table, address);
             vector::push_back(streams, id);
         } else {
             let streams = vector::empty<ID>();
             vector::push_back(&mut streams, id);
-            table::add(&mut registry.incoming_streams, address, streams);
-        }
-    }
-
-    fun register_outgoing_stream(registry: &mut StreamRegistry, address: address, id: ID) {
-        if(table::contains(&registry.outgoing_streams, address)) {
-            let streams = table::borrow_mut(&mut registry.outgoing_streams, address);
-            vector::push_back(streams, id);
-        } else {
-            let streams = vector::empty<ID>();
-            vector::push_back(&mut streams, id);
-            table::add(&mut registry.outgoing_streams, address, streams);
+            table::add(streams_table, address, streams);
         }
     }
 }

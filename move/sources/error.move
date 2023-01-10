@@ -1,4 +1,4 @@
-module slide::error {
+module reflow::error {
     const ERROR_PREFIX: u64 = 2002;
 
     public fun zero_deposit(): u64 {

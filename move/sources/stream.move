@@ -1,4 +1,4 @@
-module slide::stream {
+module reflow::stream {
     use std::vector;
 
     use sui::object::{Self, UID, ID};
@@ -9,8 +9,8 @@ module slide::stream {
     use sui::event::emit;
     use sui::table::{Self, Table};
 
-    use slide::error;
-    use slide::fraction::{Self, Fraction};
+    use reflow::error;
+    use reflow::fraction::{Self, Fraction};
 
     struct StreamRegistry has key {
         id: UID,
@@ -162,7 +162,7 @@ module slide::stream {
         if(balance::value(&self.balance) > 0) {
             let return_amount = balance::value(&self.balance);
             let sender_balance = balance::split(&mut self.balance, return_amount);
-            
+
             transfer::transfer(coin::from_balance(sender_balance, ctx), sender);
         };
 

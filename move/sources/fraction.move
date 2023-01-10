@@ -1,4 +1,4 @@
-module slide::fraction {
+module reflow::fraction {
     struct Fraction has store {
         numerator: u64,
         denominator: u64

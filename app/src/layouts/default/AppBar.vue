@@ -5,7 +5,7 @@
     </div>
 
     <v-list nav>
-      <template v-for="item in items">
+      <template v-for="item in sideBarItems">
         <v-list-item
           rounded="shaped"
           color="primary"
@@ -48,17 +48,7 @@
 
     <div class="d-block d-sm-none">
       <v-btn id="menu-activator" flat icon="mdi-account-circle-outline" />
-      <v-menu activator="#menu-activator">
-        <v-list>
-          <v-list-item
-            v-for="(item, index) in items"
-            :key="index"
-            :value="index"
-          >
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
+      <AppBarMenu activator="#menu-activator" />
     </div>
 
     <div class="d-none d-sm-block me-5">
@@ -68,35 +58,25 @@
         flat
         prepend-icon="mdi-account-circle-outline"
       >
-        {{
-          connection.address ? utils.truncateAddress(connection.address) : ""
-        }}
+        {{ address ? utils.truncate0x(address) : "" }}
       </v-btn>
 
-      <v-menu activator="#menu-activator-sm">
-        <v-list>
-          <v-list-item
-            v-for="(item, index) in items"
-            :key="index"
-            :value="index"
-          >
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
+      <AppBarMenu activator="#menu-activator-sm" />
     </div>
   </v-app-bar>
 </template>
 
 <script lang="ts" setup>
+import AppBarMenu from "@/components/menu/AppBarMenu.vue";
 import { useConnectionStore } from "@/store";
 import { utils } from "@/utils";
+import { storeToRefs } from "pinia";
 import { ref, Ref } from "vue";
 
-const connection = useConnectionStore();
+const { address } = storeToRefs(useConnectionStore());
 
 let drawer: Ref<boolean | null> = ref(null);
-const items = [
+const sideBarItems = [
   {
     icon: "mdi-view-dashboard",
     title: "Dashboard",

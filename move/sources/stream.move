@@ -128,7 +128,7 @@ module slide::stream {
         let recipient = self.recipient;
         let recipient_amount = balance_of<T>(self, recipient, now);
         
-        assert!(recipient_amount <= amount, error::balance_exceeded());
+        assert!(recipient_amount >= amount, error::balance_exceeded());
 
         let withdrawal = balance::split(&mut self.balance, amount);
 

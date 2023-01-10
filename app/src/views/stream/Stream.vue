@@ -158,7 +158,7 @@
       :show="state.modals['withdraw']"
       @toggle="toggleModal('withdraw')"
       :address="address!"
-      :stream="stream"
+      :stream="(stream as Stream)"
     />
   </v-row>
 </template>
@@ -167,6 +167,7 @@
 import Loader from "@/components/Loader.vue";
 import Withdraw from "@/components/modals/Withdraw.vue";
 import { config } from "@/config";
+import { Stream } from "@/lib/Stream";
 import { useConnectionStore, useStreamStore } from "@/store";
 import { utils, date } from "@/utils";
 import { storeToRefs } from "pinia";

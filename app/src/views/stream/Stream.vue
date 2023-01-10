@@ -79,6 +79,17 @@
             {{ stream.coinMetadata.symbol }}
           </span>
         </div>
+        <div class="my-1 d-flex justify-space-between">
+          <span>Available to withdraw</span>
+          <span>
+            {{
+              stream.recipientBalance.dividedBy(
+                Math.pow(10, stream.coinMetadata.decimals)
+              )
+            }}
+            {{ stream.coinMetadata.symbol }}
+          </span>
+        </div>
       </div>
 
       <v-tabs class="mt-5" density="compact">

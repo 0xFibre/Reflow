@@ -22,6 +22,6 @@ module slide::error {
     }
 
     public fun stream_id_mismatch(): u64 {
-        ERROR_PREFIX + 4
+        ERROR_PREFIX + 5
     }
 }

@@ -48,7 +48,7 @@ module slide::stream {
         amount: u64
     }
 
-    struct CloseStream has copy, drop {
+    struct StopStream has copy, drop {
         id: ID
     }
 
@@ -145,26 +145,33 @@ module slide::stream {
         transfer::transfer(coin::from_balance(withdrawal, ctx), self.recipient);
     }
 
-    public entry fun close_stream<T>(self: &mut Stream<T>, cap: &AccessCap, now: u64, ctx: &mut TxContext) {
+    public entry fun stop_stream<T>(self: &mut Stream<T>, cap: &AccessCap, now: u64, ctx: &mut TxContext) {
         assert!(object::borrow_id(self) == &cap.stream_id, error::stream_id_mismatch());
 
         let sender = self.sender;
         let recipient = self.recipient;
 
         let recipient_amount = balance_of<T>(self, recipient, now);
-        let recipient_balance = balance::split(&mut self.balance, recipient_amount);
+        if(recipient_amount > 0) {
+            let recipient_balance = balance::split(&mut self.balance, recipient_amount);
+            self.withdrawn_amount = self.withdrawn_amount + recipient_amount;
 
-        let remaining_balance = balance::value(&self.balance);
-        let sender_balance = balance::split(&mut self.balance, remaining_balance);
+            transfer::transfer(coin::from_balance(recipient_balance, ctx), recipient);
+        };
+
+        if(balance::value(&self.balance) > 0) {
+            let return_amount = balance::value(&self.balance);
+            let sender_balance = balance::split(&mut self.balance, return_amount);
+            
+            transfer::transfer(coin::from_balance(sender_balance, ctx), sender);
+        };
 
         emit (
-            CloseStream { 
+            StopStream { 
                 id: object::id(self)
             }
         );
 
-        transfer::transfer(coin::from_balance(sender_balance, ctx), sender);
-        transfer::transfer(coin::from_balance(recipient_balance, ctx), recipient);
     }
 
     fun balance_of<T>(self: &Stream<T>, address: address, now: u64): u64 {

@@ -16,7 +16,7 @@ export const date = {
     return `${h.length < 2 ? "0" + h : h}:${m.length < 2 ? "0" + m : m}`;
   },
 
-  formatDate(date: Date, fmt = "MMMM d, yyyy h:mm aa") {
+  formatDate(date: Date, fmt = "MMM d, yyyy h:mm aa") {
     return format(date, fmt);
   },
 };

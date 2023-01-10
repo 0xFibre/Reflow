@@ -12,6 +12,13 @@ export interface CreateStreamData {
   endTime: string;
 }
 
+export interface WithdrawFromStreamData {
+  streamId: string;
+  accessCapId: string;
+  amount: string;
+  coinType: string;
+}
+
 export interface StreamData {
   id: string;
   sender: string;

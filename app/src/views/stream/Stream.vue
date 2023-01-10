@@ -1,5 +1,6 @@
 <template>
-  <v-row v-if="stream">
+  <Loader v-if="state.loading" />
+  <v-row v-else v-if="stream">
     <v-col md="6" cols="12" class="mx-auto">
       <div class="d-flex mb-5">
         <h3>Stream</h3>
@@ -33,6 +34,7 @@
                     : true
                 "
                 :value="i"
+                @click="action.click?.call(null, action.value)"
               />
             </template>
           </v-list>
@@ -44,7 +46,8 @@
         color="primary"
         height="20"
         class="my-5"
-        striped
+        rounded
+        rounded-bar
       />
 
       <div class="mt-5">
@@ -139,20 +142,25 @@
         </v-btn>
       </div>
     </v-col>
+
+    <Withdraw
+      :show="state.modals['withdraw']"
+      @toggle="toggleModal('withdraw')"
+      :address="address!"
+      :stream="stream"
+    />
   </v-row>
 </template>
 
 <script lang="ts" setup>
+import Loader from "@/components/Loader.vue";
+import Withdraw from "@/components/modals/Withdraw.vue";
 import { config } from "@/config";
 import { useConnectionStore, useStreamStore } from "@/store";
 import { utils, date } from "@/utils";
 import { storeToRefs } from "pinia";
 import { onMounted, reactive } from "vue";
 import { useRoute } from "vue-router";
-
-// interface State {
-//   stream?: Stream;
-// }
 
 const route = useRoute();
 const streamStore = useStreamStore();
@@ -162,16 +170,32 @@ const { stream } = storeToRefs(streamStore);
 const { address } = storeToRefs(connectionStore);
 
 const actions = [
-  { title: "Add funds", icon: "mdi-cash-plus", for: "outgoing" },
-  { title: "Withdraw funds", icon: "mdi-cash-minus", for: "incoming" },
+  // { title: "Add funds", icon: "mdi-cash-plus", for: "outgoing" },
+  {
+    title: "Withdraw funds",
+    icon: "mdi-cash-minus",
+    for: "incoming",
+    value: "withdraw",
+    click: toggleModal,
+  },
   { title: "Stop stream", icon: "mdi-cancel", for: "both" },
   { title: "Copy stream URL", icon: "mdi-link" },
 ];
 
-// const state: State = reactive({ stream: undefined });
+const state: {
+  loading: boolean;
+  modals: Record<string, boolean>;
+} = reactive({
+  modals: {
+    withdraw: false,
+  },
+  loading: false,
+});
 
 onMounted(async () => {
+  state.loading = true;
   await streamStore.fetchStream(<string>route.params.id);
+  state.loading = false;
 
   const interval = setInterval(fetchStream, 1000);
 
@@ -183,4 +207,8 @@ onMounted(async () => {
     }
   }
 });
+
+function toggleModal(value: string) {
+  state.modals[value] = !state.modals[value];
+}
 </script>

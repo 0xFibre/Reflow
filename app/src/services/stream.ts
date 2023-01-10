@@ -1,5 +1,5 @@
 import { env } from "@/config";
-import { CreateStreamData } from "@/types";
+import { CreateStreamData, WithdrawFromStreamData } from "@/types";
 import { connection, provider } from "@/services";
 import { SuiMoveObject } from "@mysten/sui.js";
 import { BigNumber, object } from "@/utils";
@@ -9,7 +9,7 @@ export class StreamService {
   public module = "stream";
 
   async createStream(data: CreateStreamData) {
-    const now = String(Math.round(Date.now() / 1000) - 500);
+    const now = String(Math.round(Date.now() / 1000) - 5000);
     const payload = {
       function: "create_stream",
       module: this.module,
@@ -23,6 +23,20 @@ export class StreamService {
         data.endTime,
         now,
       ],
+      typeArgs: [data.coinType],
+    };
+
+    const response = await connection.executeMoveCall(payload);
+    return response;
+  }
+
+  async withdrawFromStream(data: WithdrawFromStreamData) {
+    const now = String(Math.round(Date.now() / 1000));
+    const payload = {
+      function: "withdraw_from_stream",
+      module: this.module,
+      package: env.slidePackageId,
+      valueArgs: [data.streamId, data.accessCapId, data.amount, now],
       typeArgs: [data.coinType],
     };
 
@@ -137,5 +151,36 @@ export class StreamService {
   async getStreamEvents(objectId: string) {
     const events = provider.getEvents({ Object: objectId }, null, null);
     return events;
+  }
+
+  async getAccessCapObject(address: string, streamId: string) {
+    const objects = await provider.getObjectsOwnedByAddress(address);
+    const type = `${env.slidePackageId}::${this.module}::AccessCap`;
+
+    const accessCapObjectIds: string[] = [];
+    for (let i = 0; i < objects.length; i++) {
+      const object = objects[i];
+
+      if (object.type == type) {
+        accessCapObjectIds.push(object.objectId);
+      }
+    }
+
+    const accessCapObjects = await provider.getObjectBatch(accessCapObjectIds);
+    const accessCap = accessCapObjects.find((accessCap) => {
+      const fields = object.getFields(
+        (<{ data: SuiMoveObject }>accessCap.details).data
+      );
+
+      return fields.stream_id === streamId;
+    });
+
+    if (accessCap) {
+      const { data } = <{ data: SuiMoveObject }>accessCap.details;
+      const id = object.getObjectId(data);
+      const fields = object.getFields(data);
+
+      return { id, streamId: fields.stream_id };
+    }
   }
 }

@@ -25,9 +25,9 @@
                 :title="action.title"
                 :prepend-icon="action.icon"
                 v-if="
-                  action.for == 'incoming'
+                  action.for == 'recipient'
                     ? stream.recipient == address
-                    : action.for == 'outgoing'
+                    : action.for == 'sender'
                     ? stream.sender == address
                     : action.for == 'both'
                     ? address == stream.sender || address == stream.recipient
@@ -51,107 +51,63 @@
       />
 
       <div class="mt-5">
-        <div class="my-1 d-flex justify-space-between">
-          <span>Streamed</span>
-          <span>
-            {{
-              stream.streamedAmount.dividedBy(
-                Math.pow(10, stream.coinMetadata.decimals)
-              )
-            }}
-            of
-            {{
-              stream.depositedAmount.dividedBy(
-                Math.pow(10, stream.coinMetadata.decimals)
-              )
-            }}
-            {{ stream.coinMetadata.symbol }}
-          </span>
-        </div>
-        <div class="my-1 d-flex justify-space-between">
-          <span>Withdrawn</span>
-          <span>
-            {{
-              stream.withdrawnAmount.dividedBy(
-                Math.pow(10, stream.coinMetadata.decimals)
-              )
-            }}
-            {{ stream.coinMetadata.symbol }}
-          </span>
-        </div>
-        <div class="my-1 d-flex justify-space-between">
-          <span>Available to withdraw</span>
-          <span>
-            {{
-              stream.recipientBalance.dividedBy(
-                Math.pow(10, stream.coinMetadata.decimals)
-              )
-            }}
-            {{ stream.coinMetadata.symbol }}
-          </span>
-        </div>
+        <TextInfoItem
+          title="Streamed"
+          :value="`${stream.streamedAmount.dividedBy(
+            Math.pow(10, stream.coinMetadata.decimals)
+          )} of ${stream.depositedAmount.dividedBy(
+            Math.pow(10, stream.coinMetadata.decimals)
+          )} ${stream.coinMetadata.symbol}`"
+        />
+
+        <TextInfoItem
+          title="Withdrawn"
+          :value="`${stream.withdrawnAmount.dividedBy(
+            Math.pow(10, stream.coinMetadata.decimals)
+          )} ${stream.coinMetadata.symbol}`"
+        />
+
+        <TextInfoItem
+          title="Available to withdraw"
+          :value="`${stream.recipientBalance.dividedBy(
+            Math.pow(10, stream.coinMetadata.decimals)
+          )} ${stream.coinMetadata.symbol}`"
+        />
       </div>
 
       <v-tabs class="mt-5" density="compact">
         <v-tab v-for="tab in ['Details', 'History']">{{ tab }}</v-tab>
       </v-tabs>
+
       <v-divider class="mb-5" />
 
-      <div class="d-flex">
-        <span>Stream ID</span>
-        <v-spacer />
-        <v-btn
-          flat
-          density="compact"
-          class="pa-0"
-          color="primary"
-          variant="text"
-          target="_blank"
-          :href="`${config.explorerUrl}/object/${stream.id}`"
-        >
-          {{ utils.truncate0x(stream.id) }}
-        </v-btn>
-      </div>
-      <div class="d-flex my-3">
-        <span>Start Date</span>
-        <v-spacer />
-        <span>{{ date.formatDate(new Date(stream.startTime * 1000)) }}</span>
-      </div>
-      <div class="d-flex my-3">
-        <span>End Date</span>
-        <v-spacer />
-        <span>{{ date.formatDate(new Date(stream.endTime * 1000)) }}</span>
-      </div>
-      <div class="d-flex my-3">
-        <span>Sender</span>
-        <v-spacer />
-        <v-btn
-          flat
-          density="compact"
-          class="pa-0"
-          color="primary"
-          variant="text"
-          target="_blank"
-          :href="`${config.explorerUrl}/address/${stream.sender}`"
-        >
-          {{ utils.truncate0x(stream.sender) }}
-        </v-btn>
-      </div>
-      <div class="d-flex my-3">
-        <span>Recipient</span>
-        <v-spacer />
-        <v-btn
-          flat
-          density="compact"
-          class="pa-0"
-          color="primary"
-          variant="text"
-          target="_blank"
-          :href="`${config.explorerUrl}/address/${stream.recipient}`"
-        >
-          {{ utils.truncate0x(stream.recipient) }}
-        </v-btn>
-      </div>
+      <LinkInfoItem
+        title="Stream ID"
+        :url="`${config.explorerUrl}/object/${stream.id}`"
+        :value="utils.truncate0x(stream.id)"
+      />
+
+      <TextInfoItem
+        title="Start Date"
+        :value="date.formatDate(new Date(stream.startTime * 1000))"
+      />
+
+      <TextInfoItem
+        title="End Date"
+        :value="date.formatDate(new Date(stream.endTime * 1000))"
+      />
+
+      <LinkInfoItem
+        title="Sender"
+        :url="`${config.explorerUrl}/address/${stream.sender}`"
+        :value="utils.truncate0x(stream.sender)"
+      />
+
+      <LinkInfoItem
+        title="Recipient"
+        :url="`${config.explorerUrl}/address/${stream.recipient}`"
+        :value="utils.truncate0x(stream.recipient)"
+      />
     </v-col>
 
     <Withdraw
@@ -170,6 +126,8 @@
 </template>
 
 <script lang="ts" setup>
+import LinkInfoItem from "@/components/display/LinkInfoItem.vue";
+import TextInfoItem from "@/components/display/TextInfoItem.vue";
 import Loader from "@/components/Loader.vue";
 import StopStream from "@/components/modals/StopStream.vue";
 import Withdraw from "@/components/modals/Withdraw.vue";
@@ -189,11 +147,11 @@ const { stream } = storeToRefs(streamStore);
 const { address } = storeToRefs(connectionStore);
 
 const actions = [
-  // { title: "Add funds", icon: "mdi-cash-plus", for: "outgoing" },
+  { title: "Add funds", icon: "mdi-cash-plus", for: "sender" },
   {
     title: "Withdraw funds",
     icon: "mdi-cash-minus",
-    for: "incoming",
+    for: "recipient",
     value: "withdraw",
     click: toggleModal,
   },

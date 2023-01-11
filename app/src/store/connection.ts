@@ -15,11 +15,13 @@ export const useConnectionStore = defineStore("connection", {
       address: null,
     }),
   }),
+
   getters: {
     address: (state) => state.connection.address,
     isConnected: (state) => state.connection.isConnected,
     wallet: (state) => state.connection.wallet,
   },
+
   actions: {
     async establishConnection(name: string) {
       connection.selectAdapter(name);

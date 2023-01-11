@@ -4,7 +4,7 @@
       <h3 class="my-3">Connect your wallet</h3>
       <v-list>
         <v-list-item
-          v-for="(wallet, i) in state.wallets"
+          v-for="(wallet, i) in wallets"
           :key="i"
           :value="wallet"
           class="my-3 pa-3"
@@ -25,21 +25,18 @@
 </template>
 
 <script lang="ts" setup>
-import { connection } from "@/services";
 import { useConnectionStore } from "@/store";
-import { onMounted, reactive } from "vue";
+import { storeToRefs } from "pinia";
+import { onMounted } from "vue";
 
 const connectionStore = useConnectionStore();
-const state: any = reactive({ wallets: [{ icon: "" }] });
+const { wallets } = storeToRefs(connectionStore);
 
 onMounted(() => {
-  state.wallets = connection.getWalletAdaptersMeta();
+  connectionStore.fetchWalletAdaptersMeta();
 });
 
 async function connect(name: string) {
-  connection.selectAdapter(name);
-
-  const result = await connection.connect();
-  connectionStore.persistConnection(result.account, name);
+  await connectionStore.establishConnection(name);
 }
 </script>

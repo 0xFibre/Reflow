@@ -55,7 +55,7 @@ router.beforeEach(async (to, _from, next) => {
   const { access } = <{ access?: string }>to.meta;
 
   if (access === "auth" && !isConnected) {
-    return next({ name: "Connected" });
+    return next({ name: "Connect" });
   }
 
   if (access === "guest" && isConnected) {

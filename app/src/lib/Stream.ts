@@ -60,4 +60,10 @@ export class Stream {
       .dividedBy(this.depositedAmount)
       .multipliedBy(100);
   }
+
+  get withdrawalProgress() {
+    return this.withdrawnAmount
+      .dividedBy(this.depositedAmount)
+      .multipliedBy(100);
+  }
 }

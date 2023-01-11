@@ -26,12 +26,14 @@
       </div>
 
       <v-progress-linear
-        :model-value="stream.streamProgress.toNumber()"
+        :buffer-value="stream.streamProgress.toNumber()"
+        :model-value="stream.withdrawalProgress.toNumber()"
         color="primary"
         height="20"
         class="my-5"
         rounded
         rounded-bar
+        stream
       />
 
       <div class="mt-5">

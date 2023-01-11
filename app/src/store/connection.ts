@@ -15,7 +15,10 @@ export const useConnectionStore = defineStore("connection", {
       address: null,
     }),
   }),
-
+  getters: {
+    address: (state) => state.connection.address,
+    isConnected: (state) => state.connection.isConnected,
+  },
   actions: {
     async establishConnection(name: string) {
       connection.selectAdapter(name);

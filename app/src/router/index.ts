@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 
+import Home from "@/views/Home.vue";
 import Connect from "@/views/Connect.vue";
 import Dashboard from "@/views/Dashboard.vue";
 import Streams from "@/views/stream/Streams.vue";
@@ -12,6 +13,11 @@ const routes = [
     path: "/",
     component: () => import("@/layouts/default/Default.vue"),
     children: [
+      {
+        path: "/",
+        name: "Home",
+        component: Home,
+      },
       {
         path: "/connect",
         name: "Connect",

@@ -95,5 +95,6 @@ defineProps<{ streams: Stream[] }>();
 tr,
 td {
   border: none !important;
+  white-space: nowrap;
 }
 </style>

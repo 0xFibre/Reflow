@@ -18,6 +18,7 @@ export const useConnectionStore = defineStore("connection", {
   getters: {
     address: (state) => state.connection.address,
     isConnected: (state) => state.connection.isConnected,
+    wallet: (state) => state.connection.wallet,
   },
   actions: {
     async establishConnection(name: string) {

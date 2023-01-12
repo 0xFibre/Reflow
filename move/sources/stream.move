@@ -94,7 +94,7 @@ module reflow::stream {
         assert!(starts_at < ends_at, error::invalid_duration());
 
         let balance = balance::zero<T>();
-        let deposit = coin::take(coin::balance_mut(coin), amount, ctx);
+        let deposit = coin::split(coin, amount, ctx);
         balance::join(&mut balance, coin::into_balance(deposit));
 
         let amount_per_second = fraction::new(amount, (ends_at - starts_at));
@@ -189,7 +189,7 @@ module reflow::stream {
 
     fun balance_of<T>(self: &mut Stream<T>, address: address, now: u64): u64 {
         let delta = delta(self, now);
-        let amount_streamed = fraction::multiply(&self.amount_per_second, delta);
+        let amount_streamed = fraction::multiply_into(&self.amount_per_second, delta);
         let recipient_balance = amount_streamed - self.withdrawn_amount;
 
         if(address == self.sender) {

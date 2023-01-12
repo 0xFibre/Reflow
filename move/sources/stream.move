@@ -182,7 +182,6 @@ module reflow::stream {
                 id: object::id(self)
             }
         );
-
     }
 
     fun balance_of<T>(self: &mut Stream<T>, address: address, now: u64): u64 {

@@ -4,7 +4,7 @@
       <v-card>
         <v-card-text>
           <div class="d-flex">
-            <h3>Stop Stream</h3>
+            <h3>Cancel Stream</h3>
             <v-spacer />
             <v-btn
               flat
@@ -15,7 +15,7 @@
             />
           </div>
 
-          <p class="my-3">Are you sure to stop this stream?</p>
+          <p class="my-3">Are you sure to cancel this stream?</p>
         </v-card-text>
 
         <v-card-actions>
@@ -34,7 +34,7 @@
             density="comfortable"
             variant="flat"
             color="primary"
-            @click="stopStream"
+            @click="cancelStream"
           >
             Continue
           </v-btn>
@@ -55,7 +55,7 @@ const { stream, address } = defineProps<{
 }>();
 defineEmits(["toggle"]);
 
-async function stopStream() {
+async function cancelStream() {
   const accessCap = await streamService.getAccessCapObject(address, stream.id);
 
   const data = {
@@ -64,7 +64,7 @@ async function stopStream() {
     coinType: stream.coinType,
   };
 
-  const result = await streamService.stopStream(data);
+  const result = await streamService.cancelStream(data);
   console.log(result);
 }
 </script>

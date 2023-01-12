@@ -48,10 +48,10 @@ export class StreamService {
     return response;
   }
 
-  async stopStream(data: StopStreamData) {
+  async cancelStream(data: StopStreamData) {
     const now = String(Math.round(Date.now() / 1000));
     const payload = {
-      function: "stop_stream",
+      function: "cancel_stream",
       module: this.module,
       package: env.slidePackageId,
       valueArgs: [data.streamId, data.accessCapId, now],

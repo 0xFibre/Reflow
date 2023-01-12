@@ -102,7 +102,7 @@
       :address="address!"
       :stream="(stream as Stream)"
     />
-    <StopStream
+    <CancelStream
       :show="state.modals['stop']"
       @toggle="toggleModal('stop')"
       :address="address!"
@@ -116,7 +116,7 @@ import LinkInfoItem from "@/components/display/LinkInfoItem.vue";
 import TextInfoItem from "@/components/display/TextInfoItem.vue";
 import Loader from "@/components/Loader.vue";
 import StreamMenu from "@/components/menu/StreamMenu.vue";
-import StopStream from "@/components/modals/StopStream.vue";
+import CancelStream from "@/components/modals/CancelStream.vue";
 import Withdraw from "@/components/modals/Withdraw.vue";
 import { config } from "@/config";
 import { Stream } from "@/lib/Stream";
@@ -143,7 +143,7 @@ const menuActions = [
     click: toggleModal,
   },
   {
-    title: "Stop stream",
+    title: "Cancel stream",
     icon: "mdi-cancel",
     for: "both",
     value: "stop",

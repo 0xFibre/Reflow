@@ -1,4 +1,5 @@
 module reflow::stream {
+    use std::option::{Self, Option};
     use std::vector;
 
     use sui::object::{Self, UID, ID};
@@ -14,7 +15,7 @@ module reflow::stream {
 
     const STREAM_ACTIVE_STATUS: u8 = 0;
     const STREAM_COMPLETED_STATUS: u8 = 1;
-    const STREAM_STOPPED_STATUS: u8 = 2;
+    const STREAM_CANCELED_STATUS: u8 = 2;
 
     struct StreamRegistry has key {
         id: UID,
@@ -31,8 +32,9 @@ module reflow::stream {
         withdrawn_amount: u64,
         deposited_amount: u64,
         created_at: u64,
-        start_time: u64,
-        end_time: u64,
+        starts_at: u64,
+        ends_at: u64,
+        canceled_at: Option<u64>,
         status: u8,
         balance: Balance<T>,
     }
@@ -67,7 +69,7 @@ module reflow::stream {
         transfer::share_object(stream_registry);
     }
 
-    fun new<T>(balance: Balance<T>, recipient: address, amount_per_second: Fraction, start_time: u64, end_time: u64, now: u64, ctx: &mut TxContext): Stream<T> {
+    fun new<T>(balance: Balance<T>, recipient: address, amount_per_second: Fraction, starts_at: u64, ends_at: u64, now: u64, ctx: &mut TxContext): Stream<T> {
         let stream = Stream<T> {
             id: object::new(ctx),
             sender: tx_context::sender(ctx),
@@ -75,8 +77,9 @@ module reflow::stream {
             deposited_amount: balance::value(&balance),
             status: STREAM_ACTIVE_STATUS,
             amount_per_second,
-            start_time,
-            end_time,
+            starts_at,
+            ends_at,
+            canceled_at: option::none(),
             balance,
             recipient,
             created_at: now
@@ -85,17 +88,17 @@ module reflow::stream {
         stream
     }
 
-    public entry fun create_stream<T>(registry: &mut StreamRegistry, amount: u64, coin: &mut Coin<T>, recipient: address, start_time: u64, end_time: u64, now: u64, ctx: &mut TxContext) {
+    public entry fun create_stream<T>(registry: &mut StreamRegistry, amount: u64, coin: &mut Coin<T>, recipient: address, starts_at: u64, ends_at: u64, now: u64, ctx: &mut TxContext) {
         assert!(amount != 0, error::zero_deposit());
-        assert!(start_time >= now, error::invalid_start_time());
-        assert!(start_time < end_time, error::invalid_duration());
+        assert!(starts_at >= now, error::invalid_start_time());
+        assert!(starts_at < ends_at, error::invalid_duration());
 
         let balance = balance::zero<T>();
         let deposit = coin::take(coin::balance_mut(coin), amount, ctx);
         balance::join(&mut balance, coin::into_balance(deposit));
 
-        let amount_per_second = fraction::new(amount, (end_time - start_time));
-        let stream = new<T>(balance, recipient, amount_per_second, start_time, end_time, now, ctx);
+        let amount_per_second = fraction::new(amount, (ends_at - starts_at));
+        let stream = new<T>(balance, recipient, amount_per_second, starts_at, ends_at, now, ctx);
 
         vector::push_back(&mut registry.all_streams, object::id(&stream));
         
@@ -152,7 +155,7 @@ module reflow::stream {
         transfer::transfer(coin::from_balance(withdrawal, ctx), self.recipient);
     }
 
-    public entry fun stop_stream<T>(self: &mut Stream<T>, cap: &AccessCap, now: u64, ctx: &mut TxContext) {
+    public entry fun cancel_stream<T>(self: &mut Stream<T>, cap: &AccessCap, now: u64, ctx: &mut TxContext) {
         assert!(object::borrow_id(self) == &cap.stream_id, error::stream_id_mismatch());
 
         let sender = self.sender;
@@ -173,8 +176,9 @@ module reflow::stream {
             transfer::transfer(coin::from_balance(sender_balance, ctx), sender);
         };
 
-        self.status = STREAM_STOPPED_STATUS;
-        
+        self.status = STREAM_CANCELED_STATUS;
+        option::fill(&mut self.canceled_at, now);
+
         emit (
             StopStream { 
                 id: object::id(self)
@@ -183,7 +187,7 @@ module reflow::stream {
 
     }
 
-    fun balance_of<T>(self: &Stream<T>, address: address, now: u64): u64 {
+    fun balance_of<T>(self: &mut Stream<T>, address: address, now: u64): u64 {
         let delta = delta(self, now);
         let amount_streamed = fraction::multiply(&self.amount_per_second, delta);
         let recipient_balance = amount_streamed - self.withdrawn_amount;
@@ -197,13 +201,15 @@ module reflow::stream {
         }
     }
 
-    fun delta<T>(self: &Stream<T>, now: u64): u64 {
-        if(self.start_time >= now) {
+    fun delta<T>(self: &mut Stream<T>, now: u64): u64 {
+        if(self.starts_at >= now) {
             0
-        } else if(self.end_time > now) {
-            now - self.start_time
+        } else if(option::is_some(&self.canceled_at)) {
+            option::extract(&mut self.canceled_at) - now
+        } else if(self.ends_at > now) {
+            now - self.starts_at
         } else {
-            self.end_time - self.start_time 
+            self.ends_at - self.starts_at 
         }
     }
 

@@ -19,14 +19,25 @@ module reflow::fraction {
          self.numerator / self.denominator
     }
 
-    public fun multiply(self: &Fraction, value: u64): u64 {
+    public fun multiply_into(self: &Fraction, value: u64): u64 {
          (self.numerator * value) / self.denominator
     }
 
-    public fun multiply_fraction(self: &Fraction, fraction: &Fraction): Fraction {
+    public fun multiply_into_fraction(self: &Fraction, fraction: &Fraction): Fraction {
         Fraction {
             numerator: self.numerator * fraction.numerator,
             denominator: self.denominator * fraction.denominator
+        }
+    }
+
+    public fun divide_into(self: &Fraction, value: u64): u64 {
+         self.numerator / (self.denominator * value)
+    }
+
+    public fun divide_into_fraction(self: &Fraction, fraction: &Fraction): Fraction {
+        Fraction {
+            numerator: self.numerator * fraction.denominator,
+            denominator: self.denominator * fraction.numerator
         }
     }
 
@@ -36,7 +47,6 @@ module reflow::fraction {
 
     public fun set_denominator(self: &mut Fraction, value: u64) {
         assert!(value != 0, EZeroDenominator);
-
         self.denominator = value;
     }
 }

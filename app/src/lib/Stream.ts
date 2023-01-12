@@ -11,8 +11,8 @@ export class Stream {
   public depositedAmount: BigNumber;
   public withdrawnAmount: BigNumber;
   public createdAt: number;
-  public startTime: number;
-  public endTime: number;
+  public startsAt: number;
+  public endsAt: number;
   public amountPerSecond: BigNumber;
   public status: number;
   public balance: BigNumber;
@@ -25,8 +25,8 @@ export class Stream {
     this.depositedAmount = data.depositedAmount;
     this.withdrawnAmount = data.withdrawnAmount;
     this.createdAt = data.createdAt;
-    this.startTime = data.startTime;
-    this.endTime = data.endTime;
+    this.startsAt = data.startsAt;
+    this.endsAt = data.endsAt;
     this.amountPerSecond = data.amountPerSecond;
     this.status = data.status;
     this.coinType = data.coinType;
@@ -37,9 +37,12 @@ export class Stream {
   delta(): number {
     const now = Math.round(Date.now() / 1000);
 
-    if (this.startTime >= now) return 0;
-    if (this.endTime > now) return now - this.startTime;
-    return this.endTime - this.startTime;
+    if (this.status == 1) {
+    }
+
+    if (this.startsAt >= now) return 0;
+    if (this.endsAt > now) return now - this.startsAt;
+    return this.endsAt - this.startsAt;
   }
 
   get recipientBalance() {

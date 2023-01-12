@@ -168,8 +168,8 @@ async function createStream() {
     amount: amount.toString(),
     coinId: inputCoin?.id,
     coinType: selectedCoin.coinType,
-    endTime: String(endTime.getTime() / 1000),
-    startTime: String(startTime.getTime() / 1000),
+    endsAt: String(endTime.getTime() / 1000),
+    startsAt: String(startTime.getTime() / 1000),
     recipient: state.input.recipient,
   };
 

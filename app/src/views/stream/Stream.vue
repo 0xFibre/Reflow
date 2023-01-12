@@ -75,12 +75,12 @@
 
       <TextInfoItem
         title="Start Date"
-        :value="date.formatDate(new Date(stream.startTime * 1000))"
+        :value="date.formatDate(new Date(stream.startsAt * 1000))"
       />
 
       <TextInfoItem
         title="End Date"
-        :value="date.formatDate(new Date(stream.endTime * 1000))"
+        :value="date.formatDate(new Date(stream.endsAt * 1000))"
       />
 
       <LinkInfoItem

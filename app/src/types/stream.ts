@@ -8,8 +8,8 @@ export interface CreateStreamData {
   amount: string;
   coinId: string;
   coinType: string;
-  startTime: string;
-  endTime: string;
+  startsAt: string;
+  endsAt: string;
 }
 
 export interface WithdrawFromStreamData {
@@ -33,8 +33,8 @@ export interface StreamData {
   depositedAmount: BigNumber;
   withdrawnAmount: BigNumber;
   createdAt: number;
-  startTime: number;
-  endTime: number;
+  startsAt: number;
+  endsAt: number;
   amountPerSecond: BigNumber;
   status: number;
   balance: BigNumber;

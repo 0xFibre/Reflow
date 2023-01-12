@@ -51,7 +51,7 @@ export class StreamService {
   async stopStream(data: StopStreamData) {
     const now = String(Math.round(Date.now() / 1000));
     const payload = {
-      function: "close_stream",
+      function: "stop_stream",
       module: this.module,
       package: env.slidePackageId,
       valueArgs: [data.streamId, data.accessCapId, now],

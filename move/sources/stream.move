@@ -12,6 +12,10 @@ module reflow::stream {
     use reflow::error;
     use reflow::fraction::{Self, Fraction};
 
+    const STREAM_ACTIVE_STATUS: u8 = 0;
+    const STREAM_COMPLETED_STATUS: u8 = 1;
+    const STREAM_STOPPED_STATUS: u8 = 2;
+
     struct StreamRegistry has key {
         id: UID,
         all_streams: vector<ID>,
@@ -69,7 +73,7 @@ module reflow::stream {
             sender: tx_context::sender(ctx),
             withdrawn_amount: 0,
             deposited_amount: balance::value(&balance),
-            status: 0,
+            status: STREAM_ACTIVE_STATUS,
             amount_per_second,
             start_time,
             end_time,
@@ -133,7 +137,9 @@ module reflow::stream {
 
         let withdrawal = balance::split(&mut self.balance, amount);
 
-        if(balance::value(&self.balance) == 0) self.status = 1;
+        if(balance::value(&self.balance) == 0) {
+            self.status = STREAM_COMPLETED_STATUS;
+        };
         self.withdrawn_amount = self.withdrawn_amount + amount;
         
         emit (
@@ -167,6 +173,8 @@ module reflow::stream {
             transfer::transfer(coin::from_balance(sender_balance, ctx), sender);
         };
 
+        self.status = STREAM_STOPPED_STATUS;
+        
         emit (
             StopStream { 
                 id: object::id(self)

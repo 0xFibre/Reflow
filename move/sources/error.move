@@ -24,4 +24,8 @@ module reflow::error {
     public fun stream_id_mismatch(): u64 {
         ERROR_PREFIX + 5
     }
+
+    public fun self_streaming(): u64 {
+        ERROR_PREFIX + 6
+    }
 }

@@ -12,6 +12,7 @@ module reflow::stream {
 
     use reflow::error;
     use reflow::fraction::{Self, Fraction};
+    use reflow::coin as coin_helper;
 
     const STREAM_ACTIVE_STATUS: u8 = 0;
     const STREAM_COMPLETED_STATUS: u8 = 1;
@@ -93,10 +94,7 @@ module reflow::stream {
         assert!(starts_at >= now, error::invalid_start_time());
         assert!(starts_at < ends_at, error::invalid_duration());
 
-        let balance = balance::zero<T>();
-        let deposit = coin::split(coin, amount, ctx);
-        balance::join(&mut balance, coin::into_balance(deposit));
-
+        let balance = coin_helper::split_into_balance<T>(coin, amount, ctx);
         let amount_per_second = fraction::new(amount, (ends_at - starts_at));
         let stream = new<T>(balance, recipient, amount_per_second, starts_at, ends_at, now, ctx);
 

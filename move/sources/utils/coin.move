@@ -2,7 +2,7 @@ module reflow::coin {
     use std::vector;
 
     use sui::coin::{Self, Coin};
-    use sui::balance::{Balance};
+    use sui::balance::{Self, Balance};
     use sui::tx_context::{Self, TxContext};
     use sui::pay as payment;
 
@@ -30,5 +30,13 @@ module reflow::coin {
     public fun multiple_into_balance<T>(coins: vector<Coin<T>>): Balance<T> {
         let coin = join_multiple<T>(coins);
         coin::into_balance(coin)
+    }
+
+    public fun split_into_balance<T>(coin: &mut Coin<T>, amount: u64, ctx: &mut TxContext): Balance<T> {
+        let balance = balance::zero<T>();
+        let split_coin = coin::split(coin, amount, ctx);
+        balance::join(&mut balance, coin::into_balance(split_coin));
+
+        balance
     }
 }

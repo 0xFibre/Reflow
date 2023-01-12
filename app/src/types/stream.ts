@@ -35,6 +35,7 @@ export interface StreamData {
   createdAt: number;
   startsAt: number;
   endsAt: number;
+  canceledAt: number;
   amountPerSecond: BigNumber;
   status: number;
   balance: BigNumber;

@@ -13,6 +13,7 @@ export class Stream {
   public createdAt: number;
   public startsAt: number;
   public endsAt: number;
+  public canceledAt: number;
   public amountPerSecond: BigNumber;
   public status: number;
   public balance: BigNumber;
@@ -27,6 +28,7 @@ export class Stream {
     this.createdAt = data.createdAt;
     this.startsAt = data.startsAt;
     this.endsAt = data.endsAt;
+    this.canceledAt = data.canceledAt;
     this.amountPerSecond = data.amountPerSecond;
     this.status = data.status;
     this.coinType = data.coinType;
@@ -37,10 +39,8 @@ export class Stream {
   delta(): number {
     const now = Math.round(Date.now() / 1000);
 
-    if (this.status == 1) {
-    }
-
     if (this.startsAt >= now) return 0;
+    if (this.canceledAt) return this.canceledAt - this.startsAt;
     if (this.endsAt > now) return now - this.startsAt;
     return this.endsAt - this.startsAt;
   }

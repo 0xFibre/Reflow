@@ -33,7 +33,7 @@
         class="my-5"
         rounded
         rounded-bar
-        stream
+        :stream="stream.status == 0"
       />
 
       <div class="mt-5">

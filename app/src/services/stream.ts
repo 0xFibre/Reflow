@@ -159,6 +159,7 @@ export class StreamService {
       createdAt: Number(fields.created_at),
       startsAt: Number(fields.starts_at),
       endsAt: Number(fields.ends_at),
+      canceledAt: fields.canceled_at || Number(fields.canceled_at),
       coinType,
       coinMetadata: await provider.getCoinMetadata(coinType),
     };

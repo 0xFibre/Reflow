@@ -6,7 +6,7 @@ interface Config {
 }
 export const config: Config = {
   stream: {
-    status: ["Active", "Closed"],
+    status: ["Active", "Completed", "Stopped"],
   },
   explorerUrl: "https://explorer.sui.io",
 };

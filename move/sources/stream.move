@@ -93,6 +93,7 @@ module reflow::stream {
         assert!(amount != 0, error::zero_deposit());
         assert!(starts_at >= now, error::invalid_start_time());
         assert!(starts_at < ends_at, error::invalid_duration());
+        assert!(tx_context::sender(ctx) != recipient, error::self_streaming());
 
         let balance = coin_helper::split_into_balance<T>(coin, amount, ctx);
         let amount_per_second = fraction::new(amount, (ends_at - starts_at));

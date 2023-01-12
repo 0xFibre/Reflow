@@ -4,14 +4,14 @@
   </div>
 
   <v-row class="mb-3">
-    <v-col md="3" sm="6" cols="12">
+    <v-col md="6" sm="6" cols="12">
       <DashboardCard
         title="Incoming Streams"
         :loading="state.loading"
         :count="streamStore.getStreamsCount('incoming')"
       />
     </v-col>
-    <v-col md="3" sm="6" cols="12">
+    <v-col md="6" sm="6" cols="12">
       <DashboardCard
         title="Outgoing Streams"
         :loading="state.loading"

@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { onMounted } from "vue";
-import StreamsTable from "@/components/StreamsTable.vue";
+import StreamsTable from "@/components/table/StreamsTable.vue";
 import { useRoute } from "vue-router";
 import { useStreamStore } from "@/store";
 import { StreamType } from "@/types";

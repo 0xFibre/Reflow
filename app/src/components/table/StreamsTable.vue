@@ -7,7 +7,7 @@
         </th>
       </tr>
     </thead>
-    <tbody v-if="streams.length > 0">
+    <tbody>
       <tr v-for="stream in streams" :key="stream.id">
         <td>
           <v-btn
@@ -56,10 +56,10 @@
             density="comfortable"
             :color="
               stream.status == 0
-                ? 'success'
+                ? 'primary'
                 : stream.status == 1
-                ? 'orange'
-                : 'error'
+                ? 'success'
+                : 'info'
             "
           >
             {{ config.stream.status[stream.status] }}
@@ -80,6 +80,10 @@
       </tr>
     </tbody>
   </v-table>
+
+  <div v-if="streams.length < 1" class="text-center my-5 d-block mx-auto">
+    <p>No streams found</p>
+  </div>
 </template>
 
 <script setup lang="ts">

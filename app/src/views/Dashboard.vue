@@ -35,7 +35,7 @@
 <script setup lang="ts">
 import { useStreamStore } from "@/store";
 import { onMounted, reactive } from "vue";
-import StreamsTable from "@/components/StreamsTable.vue";
+import StreamsTable from "@/components/table/StreamsTable.vue";
 import DashboardCard from "@/components/DashboardCard.vue";
 import Loader from "@/components/Loader.vue";
 

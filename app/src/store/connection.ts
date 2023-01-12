@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { useLocalStorage } from "@vueuse/core";
 import { connection } from "@/services";
+import { Router } from "vue-router";
 
 export const useConnectionStore = defineStore("connection", {
   state: () => ({
@@ -23,7 +24,7 @@ export const useConnectionStore = defineStore("connection", {
   },
 
   actions: {
-    async establishConnection(name: string) {
+    async establishConnection(name: string, router: Router) {
       connection.selectAdapter(name);
       const result = await connection.connect();
 
@@ -32,9 +33,11 @@ export const useConnectionStore = defineStore("connection", {
         wallet: name,
         isConnected: true,
       };
+
+      router.push({ name: "Dashboard" });
     },
 
-    async deleteConnection() {
+    async deleteConnection(router: Router) {
       await connection.disconnect();
 
       this.connection = {
@@ -42,6 +45,8 @@ export const useConnectionStore = defineStore("connection", {
         wallet: null,
         isConnected: false,
       };
+
+      router.push({ name: "Connect" });
     },
 
     fetchWalletAdaptersMeta() {

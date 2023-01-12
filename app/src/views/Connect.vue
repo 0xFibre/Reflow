@@ -28,7 +28,9 @@
 import { useConnectionStore } from "@/store";
 import { storeToRefs } from "pinia";
 import { onMounted } from "vue";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
 const connectionStore = useConnectionStore();
 const { wallets } = storeToRefs(connectionStore);
 
@@ -37,6 +39,6 @@ onMounted(() => {
 });
 
 async function connect(name: string) {
-  await connectionStore.establishConnection(name);
+  await connectionStore.establishConnection(name, router);
 }
 </script>

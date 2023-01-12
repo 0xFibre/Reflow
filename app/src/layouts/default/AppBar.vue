@@ -28,7 +28,9 @@
 
     <template v-slot:append>
       <div class="pa-2">
-        <v-btn block flat color="secondary"> Disconnect </v-btn>
+        <v-btn block flat color="secondary" @click="disconnect">
+          Disconnect
+        </v-btn>
       </div>
     </template>
   </v-navigation-drawer>
@@ -48,7 +50,7 @@
 
     <div class="d-block d-sm-none">
       <v-btn id="menu-activator" flat icon="mdi-account-circle-outline" />
-      <AppBarMenu activator="#menu-activator" />
+      <AppBarMenu :items="menuItems" activator="#menu-activator" />
     </div>
 
     <div class="d-none d-sm-block me-5">
@@ -61,7 +63,7 @@
         {{ address ? utils.truncate0x(address) : "" }}
       </v-btn>
 
-      <AppBarMenu activator="#menu-activator-sm" />
+      <AppBarMenu :items="menuItems" activator="#menu-activator-sm" />
     </div>
   </v-app-bar>
 </template>
@@ -72,8 +74,11 @@ import { useConnectionStore } from "@/store";
 import { utils } from "@/utils";
 import { storeToRefs } from "pinia";
 import { ref, Ref } from "vue";
+import { useRouter } from "vue-router";
 
-const { address } = storeToRefs(useConnectionStore());
+const connectionStore = useConnectionStore();
+const { address } = storeToRefs(connectionStore);
+const router = useRouter();
 
 let drawer: Ref<boolean | null> = ref(null);
 const sideBarItems = [
@@ -93,4 +98,16 @@ const sideBarItems = [
     path: "/streams/outgoing",
   },
 ];
+const menuItems = [
+  { icon: "mdi-open-in-new", title: "View on explorer", action: openExplorer },
+  { icon: "mdi-logout", title: "Disconnect", action: disconnect },
+];
+
+async function disconnect() {
+  await connectionStore.deleteConnection(router);
+}
+
+function openExplorer() {
+  window.open(`https://explorer.sui.io/address/${address.value}`);
+}
 </script>

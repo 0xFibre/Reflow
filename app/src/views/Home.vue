@@ -87,7 +87,10 @@
               flat
               :color="resource.color"
               :prepend-icon="resource.icon"
+              target="_blank"
+              :href="resource.url"
               class="me-2"
+              :disabled="resource.disabled"
             >
               {{ resource.text }}
             </v-btn>
@@ -191,6 +194,7 @@ const resources = [
     url: "https://docs.reflow.cash",
     color: "primary",
     icon: "mdi-file-document",
+    disabled: true,
   },
 ];
 

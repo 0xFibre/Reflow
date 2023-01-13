@@ -7,7 +7,7 @@ module reflow::registry {
 
     friend reflow::stream;
 
-    struct Registry has key {
+    struct Registry has key, store {
         id: UID,
         all_streams: vector<ID>,
         incoming_streams: Table<address, vector<ID>>,
@@ -27,16 +27,24 @@ module reflow::registry {
         &self.incoming_streams
     }
 
-    public(friend) fun borrow_ioutgoing_streams(self: &Registry): &Table<address, vector<ID>> {
-        &self.incoming_streams
+    public(friend) fun borrow_outgoing_streams(self: &Registry): &Table<address, vector<ID>> {
+        &self.outgoing_streams
     }
 
-    public(friend) fun borrow_iincoming_streams_mut(self: &mut Registry): &mut Table<address, vector<ID>> {
+    public(friend) fun borrow_incoming_streams_mut(self: &mut Registry): &mut Table<address, vector<ID>> {
         &mut self.incoming_streams
     }
 
-    public(friend) fun borrow_ioutgoing_streams_mut(self: &mut Registry): &mut Table<address, vector<ID>> {
-        &mut self.incoming_streams
+    public(friend) fun borrow_outgoing_streams_mut(self: &mut Registry): &mut Table<address, vector<ID>> {
+        &mut self.outgoing_streams
+    }
+
+    public(friend) fun borrow_all_streams(self: &Registry): &vector<ID> {
+        &self.all_streams
+    }
+
+    public(friend) fun borrow_all_streams_mut(self: &mut Registry): &mut vector<ID> {
+        &mut self.all_streams
     }
 
     public(friend) fun register_stream(streams_table: &mut Table<address, vector<ID>>, address: address, stream_id: ID) {

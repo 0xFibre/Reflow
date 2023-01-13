@@ -1,5 +1,7 @@
 module reflow::stream {
     use std::option::{Self, Option};
+    use std::string::{Self, String};
+    use std::type_name;
     use std::vector;
 
     use sui::object::{Self, UID, ID};
@@ -8,22 +10,15 @@ module reflow::stream {
     use sui::tx_context::{Self, TxContext};
     use sui::transfer;
     use sui::event::emit;
-    use sui::table::{Self, Table};
 
     use reflow::error;
+    use reflow::registry::{Self, Registry};
     use reflow::fraction::{Self, Fraction};
     use reflow::coin as coin_helper;
 
     const STREAM_ACTIVE_STATUS: u8 = 0;
     const STREAM_COMPLETED_STATUS: u8 = 1;
     const STREAM_CANCELED_STATUS: u8 = 2;
-
-    struct StreamRegistry has key {
-        id: UID,
-        all_streams: vector<ID>,
-        incoming_streams: Table<address, vector<ID>>,
-        outgoing_streams: Table<address, vector<ID>>,
-    }
 
     struct Stream<phantom T> has key {
         id: UID,
@@ -38,6 +33,7 @@ module reflow::stream {
         canceled_at: Option<u64>,
         status: u8,
         balance: Balance<T>,
+        coin_type: String
     }
 
     struct AccessCap has key {
@@ -60,36 +56,35 @@ module reflow::stream {
     }
 
     fun init(ctx: &mut TxContext) {
-        let stream_registry = StreamRegistry {
-            id: object::new(ctx),
-            all_streams: vector::empty(),
-            incoming_streams: table::new(ctx),
-            outgoing_streams: table::new(ctx),
-        };
-
-        transfer::share_object(stream_registry);
+        let registry = registry::new(ctx);
+        transfer::share_object(registry);
     }
 
     fun new<T>(balance: Balance<T>, recipient: address, amount_per_second: Fraction, starts_at: u64, ends_at: u64, now: u64, ctx: &mut TxContext): Stream<T> {
-        let stream = Stream<T> {
-            id: object::new(ctx),
-            sender: tx_context::sender(ctx),
-            withdrawn_amount: 0,
-            deposited_amount: balance::value(&balance),
-            status: STREAM_ACTIVE_STATUS,
-            amount_per_second,
-            starts_at,
-            ends_at,
-            canceled_at: option::none(),
-            balance,
-            recipient,
-            created_at: now
-        };
+        let id = object::new(ctx);
+        let sender = tx_context::sender(ctx);
+        let deposited_amount = balance::value(&balance);
+        let canceled_at = option::none<u64>();
+        let coin_type = string::from_ascii(type_name::into_string(type_name::get<T>()));
 
-        stream
+        Stream<T> {
+            id,
+            sender ,
+            ends_at,
+            balance,
+            starts_at,
+            recipient,
+            coin_type,
+            canceled_at,
+            created_at: now,
+            deposited_amount,
+            amount_per_second,
+            withdrawn_amount: 0,
+            status: STREAM_ACTIVE_STATUS
+        }
     }
 
-    public entry fun create_stream<T>(registry: &mut StreamRegistry, amount: u64, coin: &mut Coin<T>, recipient: address, starts_at: u64, ends_at: u64, now: u64, ctx: &mut TxContext) {
+    public entry fun create_stream<T>(registry: &mut Registry, amount: u64, coin: &mut Coin<T>, recipient: address, starts_at: u64, ends_at: u64, now: u64, ctx: &mut TxContext) {
         assert!(amount != 0, error::zero_deposit());
         assert!(starts_at >= now, error::invalid_start_time());
         assert!(starts_at < ends_at, error::invalid_duration());
@@ -99,16 +94,16 @@ module reflow::stream {
         let amount_per_second = fraction::new(amount, (ends_at - starts_at));
         let stream = new<T>(balance, recipient, amount_per_second, starts_at, ends_at, now, ctx);
 
-        vector::push_back(&mut registry.all_streams, object::id(&stream));
+        vector::push_back(registry::borrow_all_streams_mut(registry), object::id(&stream));
         
-        register_stream(&mut registry.outgoing_streams, tx_context::sender(ctx), object::id(&stream));
-        register_stream(&mut registry.incoming_streams, recipient, object::id(&stream));
+        registry::register_stream(registry::borrow_outgoing_streams_mut(registry), tx_context::sender(ctx), object::id(&stream));
+        registry::register_stream(registry::borrow_incoming_streams_mut(registry), recipient, object::id(&stream));
 
         emit (
-                CreateStream { 
-                    id: object::id(&stream) 
-                }
-            );
+            CreateStream { 
+                id: object::id(&stream) 
+            }
+        );
 
         transfer::transfer(
             AccessCap { 
@@ -118,6 +113,7 @@ module reflow::stream {
             }, 
             tx_context::sender(ctx)
         );
+
         transfer::transfer(
             AccessCap { 
                 id: object::new(ctx), 
@@ -126,6 +122,7 @@ module reflow::stream {
             }, 
             recipient
         );
+        
         transfer::share_object(stream);
     }
 
@@ -208,17 +205,6 @@ module reflow::stream {
             now - self.starts_at
         } else {
             self.ends_at - self.starts_at 
-        }
-    }
-
-    fun register_stream(streams_table: &mut Table<address, vector<ID>>, address: address, id: ID) {
-        if(table::contains(streams_table, address)) {
-            let streams = table::borrow_mut(streams_table, address);
-            vector::push_back(streams, id);
-        } else {
-            let streams = vector::empty<ID>();
-            vector::push_back(&mut streams, id);
-            table::add(streams_table, address, streams);
         }
     }
 }

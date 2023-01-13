@@ -5,7 +5,7 @@ module reflow::registry {
     use sui::object::{Self, UID, ID};
     use sui::tx_context::{TxContext};
 
-    friend reflow::main;
+    friend reflow::stream;
 
     struct Registry has key {
         id: UID,

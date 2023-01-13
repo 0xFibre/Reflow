@@ -1,6 +1,12 @@
+@font-face {
+  font-family: "Circular";
+  src: url("/fonts/circular-book.woff2") format("woff2"), url("/fonts/circular-medium.woff2") format("woff2"),
+    url("/fonts/circular-bold.woff2") format("woff2");
+}
+
 * {
   text-transform: unset !important;
-  font-family: Nunito, sans-serif !important;
+  font-family: Circular, sans-serif !important;
 }
 
 .no-select {

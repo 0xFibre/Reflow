@@ -1,4 +1,4 @@
-module suifuns::coin {
+module reflow::coin {
     use std::vector;
 
     use sui::coin::{Self, Coin};
